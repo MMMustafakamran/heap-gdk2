@@ -1,0 +1,9 @@
+{
+ "text": "So the page says the agent proposes the action, and the UI renders the checkpoint.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 6.966,
+ "file": "207b2c7353dcc89ba30d018f8642e53d.mp3",
+ "clip": "ADK-vue-20-GovernedActions",
+ "at": "evidence"
+}

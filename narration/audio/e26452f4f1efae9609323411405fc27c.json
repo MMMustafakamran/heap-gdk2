@@ -1,0 +1,9 @@
+{
+ "text": "But the page only shows the Vue side. With a normal ADK agent the tool never reaches the model, because the agent needs the AGUI toolset, and, uh, this page never says that. With it added, it works.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 15.047,
+ "file": "e26452f4f1efae9609323411405fc27c.mp3",
+ "clip": "ADK-vue-08-FrontendTools",
+ "at": "notepad"
+}

@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-13-SharedState",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the shared state page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. After asking it to remember my favourite colour, the note showed up, but only with the showcase file I copied in."
+  },
+  {
+   "at": "evidence",
+   "text": "So the agent snippet uses set notes here, which is never shown."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And this inject preferences callback is not shown either."
+  },
+  {
+   "at": "notepad",
+   "text": "Basically the snippet is only the LLM agent call. Set notes, inject preferences, the instruction and get model are never shown, and the file it mentions is not linked. So as written it is a name error, and I had to copy the showcase file to run it."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, please take a look and fix this."
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+{
+ "text": "So the UI and the agent never match up. The agent writes the document, but the panel waits for other keys, so it stays on idle.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.545,
+ "file": "2a051e450507ac9f1496864f3211550b.mp3",
+ "clip": "ADK-vue-11-StateRendering",
+ "at": "notepad"
+}

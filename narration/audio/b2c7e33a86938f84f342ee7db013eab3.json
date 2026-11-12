@@ -1,0 +1,9 @@
+{
+ "text": "So the component here calls search orders, which is never defined.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 5.248,
+ "file": "b2c7e33a86938f84f342ee7db013eab3.mp3",
+ "clip": "ADK-vue-21-WebMcp",
+ "at": "evidence"
+}

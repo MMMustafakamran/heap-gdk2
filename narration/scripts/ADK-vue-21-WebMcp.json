@@ -1,0 +1,29 @@
+{
+ "clip": "ADK-vue-21-WebMcp",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the WebMCP page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked the agent to use the search orders tool, and the chat never replied."
+  },
+  {
+   "at": "evidence",
+   "text": "So the component here calls search orders, which is never defined."
+  },
+  {
+   "at": "notepad",
+   "text": "The page never defines or imports search orders, and when the tool is used the chat just never replies."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, this one does not work, kindly have a look."
+  }
+ ]
+}

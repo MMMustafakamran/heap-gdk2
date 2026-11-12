@@ -1,0 +1,35 @@
+node_modules/
+.next/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+logs/
+*.log
+autorecorder/videos/
+autorecorder/test-results/
+*.webm
+*.mp4
+*.db
+*.db-*
+tmp/
+# recorder / pipeline run output
+runs/
+# narration: temp audio cache (CI) and fit reports; committed audio lives in narration/audio/
+narrate-audio/
+narration/**/*.fit.json
+# never commit keys or the private voice sample (VOICE.md section 2)
+*.env
+*.env.txt
+reference-*.wav
+ref16k.wav
+sample-full.wav
+
+# generated after install by autorecorder/scripts/write-versions.mjs
+my-copilot-app/VERSIONS.md
+tools/__pycache__/
+# keys: backend/.env, my-copilot-app/.env.intelligence (covered by .env / .env.* above)
+autorecorder/node_modules/

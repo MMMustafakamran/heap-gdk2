@@ -1,0 +1,1355 @@
+import { existsSync, mkdirSync, rmSync, unlinkSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { executePageAction } from '../actions';
+import { endTimeline, mark, saveTimeline, setTimelinePage, startTimeline } from './timeline';
+import { diagnoseError } from './diagnostics';
+import { PROJECT } from '../config/project.config';
+import { SELECTORS } from '../config/selectors.config';
+import { castDuration, compressCast, writeCast, type Cast } from './cli/cast';
+import {
+  ServiceStartError,
+  startService,
+  type RunningService,
+} from './cli/service';
+import { generateTerminalHtml } from './cli/terminal';
+import { breakingErrors, captureConsole, type ConsoleEntry } from './console-capture';
+import {
+  buildFailureEvidence,
+  snapshotLogOffsets,
+  writeFailureLog,
+  type LogSource,
+} from './failure-evidence';
+import { pickShell, runFailureTerminal } from './failure-terminal';
+import { generateIdeHtml, type IdeTabConfig } from './ide/generator';
+import { closeNotepad, openNotepad, setNotepadClip, typeInNotepad } from './overlays/notepad';
+import { humanClick, humanGlide, humanScrollDown, restCursorSomewhere, sleep } from './overlays/cursor';
+import { between, jitter, pause, seedTake } from './overlays/human';
+import { clickTaskbarApp, ensureOverlays, waitForHydration } from './overlays/taskbar';
+import { timeoutsFor } from './timeouts';
+import { type ActionContext, type PageRecordConfig, type RecorderTimeouts } from './types';
+
+/**
+ * Smoothly and visibly scrolls the simulated VS Code .code-viewport down to the target startLine.
+ *
+ * `viewIdx` targets one specific tab's viewport by id. A selector list such as
+ * `.editor-body-view:not([style*="display: none"]) .code-viewport, .code-viewport`
+ * does NOT work here: querySelector resolves a selector list in document order,
+ * not list order, so it returns tab 0's (hidden) viewport whenever a later tab
+ * is active -- which silently scrolled the wrong pane on every extra tab.
+ */
+async function humanScrollCodeViewport(
+  page: Page,
+  startLine: number,
+  viewIdx: number,
+): Promise<void> {
+  if (startLine <= 14) {
+    await sleep(300);
+    return;
+  }
+
+  // Calculate target scrollTop: each line is 22px in height
+  // Center the highlighted range in the editor pane
+  const targetScrollTop = Math.max(0, (startLine - 8) * 22);
+
+  await page.evaluate(async ({ targetY, idx }) => {
+    const viewport = document.querySelector(
+      `#ide-view-${idx} .code-viewport`,
+    ) as HTMLElement | null;
+    if (!viewport) return;
+
+    const startY = viewport.scrollTop;
+    const distance = targetY - startY;
+    if (Math.abs(distance) < 15) return;
+
+    const steps = 32;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      // Smooth cubic ease-in-out
+      const progress =
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      viewport.scrollTop = startY + distance * progress;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+  }, { targetY: targetScrollTop, idx: viewIdx });
+
+  await sleep(350);
+}
+
+/** Current scroll offset of the doc page's scroller (or the window). */
+async function docScrollTop(page: Page): Promise<number> {
+  return page
+    .evaluate(() => {
+      const el = (window as any).__autorecordScroller as HTMLElement | null;
+      return el ? el.scrollTop : window.scrollY;
+    })
+    .catch(() => 0);
+}
+
+/**
+ * Scrolls the doc page back up so its first real code block sits in the upper
+ * half of the viewport, and returns that block's on-screen box. Uses the same
+ * scroller `humanScrollDown` resolved, smoothly, so it reads as the reader
+ * going back for the code. Null when the page has no code block.
+ */
+async function scrollDocCodeBlockIntoView(
+  page: Page,
+): Promise<{ x: number; y: number; width: number; height: number } | null> {
+  const found = await page
+    .evaluate((sel) => {
+      const scroller = ((window as any).__autorecordScroller as HTMLElement | null) ?? null;
+      const pres = Array.from(document.querySelectorAll(sel)).filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.height > 60 && r.width > 200;
+      });
+      const pre = pres[0] as HTMLElement | undefined;
+      if (!pre) return false;
+      const r = pre.getBoundingClientRect();
+      const wanted = 160; // where the block's top should land
+      if (scroller) scroller.scrollTo({ top: scroller.scrollTop + r.top - wanted, behavior: 'smooth' });
+      else window.scrollTo({ top: window.scrollY + r.top - wanted, behavior: 'smooth' });
+      (window as any).__autorecordDocCode = pre;
+      return true;
+    }, SELECTORS.docCodeBlock)
+    .catch(() => false);
+  if (!found) return null;
+  await sleep(900);
+  return page
+    .evaluate(() => {
+      const pre = (window as any).__autorecordDocCode as HTMLElement | null;
+      if (!pre) return null;
+      const r = pre.getBoundingClientRect();
+      return { x: r.left, y: r.top, width: r.width, height: r.height };
+    })
+    .catch(() => null);
+}
+
+/**
+ * Selects a doc-page code block the way a reader does: press at its first
+ * line, drag to its last. The selection is the browser's own -- extended with
+ * `caretRangeFromPoint` under the cursor on every step -- so it paints exactly
+ * as a real drag would on that site. A page that refuses selection (user-select:
+ * none) gets the other gesture a reader makes: the cursor circling the block.
+ * Either way about a second.
+ */
+async function dragSelectDocCode(
+  page: Page,
+  box: { x: number; y: number; width: number; height: number },
+): Promise<void> {
+  const pad = 12;
+  const x0 = box.x + pad + 2;
+  const y0 = box.y + 10;
+  const y1 = Math.min(box.y + box.height - pad - 4, 1010);
+  const x1 = box.x + Math.min(box.width - pad, pad + 460);
+  await humanGlide(page, x0, y0, 18);
+  await sleep(between(60, 140));
+  await page.evaluate(`(function(){var c=document.getElementById('playwright-virtual-mouse');if(c)c.style.transform='translate(-4px, -2px) scale(0.9)';})()`).catch(() => {});
+
+  const steps = 16;
+  const stepMs = Math.min(70, Math.max(30, 950 / steps));
+  let selecting = true;
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const x = x0 + (x1 - x0) * t + between(-3, 3);
+    const y = y0 + (y1 - y0) * t;
+    const selected = (await page
+      .evaluate(
+        ({ sx, sy, x, y }) => {
+          const c = document.getElementById('playwright-virtual-mouse');
+          if (c) {
+            c.style.left = x.toFixed(1) + 'px';
+            c.style.top = y.toFixed(1) + 'px';
+          }
+          const pre = (window as any).__autorecordDocCode as HTMLElement | null;
+          const sel = window.getSelection();
+          const from = (document as any).caretRangeFromPoint?.(sx, sy) as Range | null;
+          const to = (document as any).caretRangeFromPoint?.(x, y) as Range | null;
+          if (!pre || !sel || !from || !to || !pre.contains(to.startContainer)) return sel ? sel.toString().length : 0;
+          const range = document.createRange();
+          range.setStart(from.startContainer, from.startOffset);
+          range.setEnd(to.startContainer, to.startOffset);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          return sel.toString().length;
+        },
+        { sx: x0, sy: y0, x, y },
+      )
+      .catch(() => 0)) as number;
+    if (i === 4 && selected === 0) {
+      selecting = false;
+      break;
+    }
+    await sleep(jitter(stepMs, 0.35));
+  }
+  await sleep(between(50, 110));
+  await page.evaluate(`(function(){var c=document.getElementById('playwright-virtual-mouse');if(c)c.style.transform='translate(-4px, -2px) scale(1)';})()`).catch(() => {});
+
+  if (!selecting) {
+    // Nothing selectable here: circle the block twice instead, loosely.
+    const cx = box.x + Math.min(box.width / 2, 320);
+    const cy = box.y + box.height / 2;
+    const rx = Math.min(box.width / 2 - 10, 300);
+    const ry = Math.min(box.height / 2 + 6, 120);
+    for (let k = 0; k < 2; k++) {
+      for (let a = 0; a <= 8; a++) {
+        const ang = (a / 8) * Math.PI * 2;
+        await humanGlide(page, cx + rx * Math.cos(ang) + between(-6, 6), cy + ry * Math.sin(ang) + between(-4, 4), 6);
+      }
+    }
+  }
+}
+
+/**
+ * A short fade as a simulated window comes up.
+ *
+ * The Notepad already opens with one; the IDE and the terminal appeared in a
+ * single frame, which is how a navigation looks and not how an app switch
+ * does. 180ms is under a real window animation and over one frame.
+ */
+function withWindowFade(html: string): string {
+  const style =
+    '<style>@keyframes __arWinIn{from{opacity:0;transform:scale(.992)}to{opacity:1;transform:none}}' +
+    'body{animation:__arWinIn .18s ease-out both}</style>';
+  return html.includes('</head>') ? html.replace('</head>', `${style}</head>`) : style + html;
+}
+
+/**
+ * Virtual path the simulated IDE is served from, on the frontend's own origin.
+ * Intercepted by Playwright and fulfilled from memory -- it never reaches Next.js.
+ */
+const IDE_ROUTE_PATH = '/__autorecord_ide__';
+
+/** Same trick for the terminal window: served from memory, never from Next.js. */
+const TERMINAL_ROUTE_PATH = '/__autorecord_terminal__';
+
+/** One terminal segment of a CLI video. */
+export interface CliRecordSegment {
+  /** The captured session to replay. Compress it before passing it in. */
+  cast: Cast;
+  /** Terminal title-bar text. Defaults to the cast's own title. */
+  title?: string;
+}
+
+/** What `recordCliFlow` needs: captured sessions and where they came from. */
+export interface CliRecordRequest {
+  /** Flow id, for logs. */
+  id: string;
+  /** Human title, for logs. */
+  name: string;
+  /** Video filename stem, without extension. */
+  filename: string;
+  /**
+   * Sessions to replay, in order, in one terminal window.
+   *
+   * More than one so a single video can carry a whole set — four package
+   * managers installing the same project belong in one clip, not four, because
+   * the point of the matrix is the comparison between them.
+   */
+  segments: CliRecordSegment[];
+  /** Doc page to open before the terminal, when the flow names one. */
+  docUrl?: string;
+
+  /**
+   * Folder under `videos/` to write into.
+   *
+   * CLI clips keep to their own: they are a different kind of artifact from the
+   * per-doc-page recordings, and mixing them makes the directory useless for
+   * finding either.
+   */
+  subdir?: string;
+
+  /**
+   * Source files shown in the simulated IDE before the terminal.
+   *
+   * For a finding, this is where "installed versus declared" lives — the
+   * resolved versions next to the manifest that declared them, and the line
+   * that actually breaks. A terminal error on its own says something failed;
+   * these say what it was running against.
+   */
+  ideTabs?: IdeTabConfig[];
+
+  /** Seconds to dwell on each IDE tab. */
+  ideDwellMs?: number;
+
+  /**
+   * A written explanation, typed into Notepad at the end of the take.
+   *
+   * The clip has to survive being watched by someone who was not here. A
+   * terminal error explains what happened; this explains why it happened and
+   * what it means, in the recording rather than in a separate document that
+   * will drift away from it.
+   */
+  notepad?: { filename: string; body: string; charDelayMs?: number };
+}
+
+/** Thrown to leave a docOnly take early; not an error. */
+class DocOnlyDone extends Error {}
+
+/** Result of one page recording, with hard failures separated from cosmetic notes. */
+export interface RecordResult {
+  success: boolean;
+  filename: string;
+  error?: string;
+  warnings: string[];
+  /** Browser console errors seen during the take, deduplicated. */
+  consoleErrors?: string[];
+}
+
+/**
+ * One line per distinct console error, for the result and the summary.
+ *
+ * A React error boundary logs the same failure a dozen times over; twelve
+ * copies in the summary read as noise rather than as the finding.
+ */
+function distinctErrors(entries: ConsoleEntry[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const e of entries) {
+    if (e.level !== 'error' || seen.has(e.text)) continue;
+    seen.add(e.text);
+    out.push(e.source ? `${e.text} (${e.source})` : e.text);
+  }
+  return out;
+}
+
+/**
+ * Owner, 2026-11-08 (QA-RULES section 1): close Next.js's dev "N Issues" pill with its own
+ * close button, the way a person would, when it is already up as the demo loads.
+ * CopilotKitProvider's Date.now() puts it on every page (a minor note), working ones too. Pages
+ * without Next (Vite) have no pill: nothing happens. Real crashes still show the error overlay.
+ */
+async function dismissNextIssues(page: Page): Promise<void> {
+  const btn = page.locator('nextjs-portal [data-issues-collapse]').first();
+  if (!(await btn.isVisible().catch(() => false))) {
+    await sleep(800); // the pill animates in just after hydration
+    if (!(await btn.isVisible().catch(() => false))) return;
+  }
+  // The pill slides up into place: a box read mid-animation sits ~45 px low, and the click then
+  // lands on the taskbar below it. Wait until two reads agree, and re-aim if it moved during the glide.
+  const settled = async () => {
+    let prev = await btn.boundingBox().catch(() => null);
+    for (let i = 0; i < 12 && prev; i++) {
+      await sleep(250);
+      const cur = await btn.boundingBox().catch(() => null);
+      if (cur && Math.abs(cur.x - prev.x) < 1 && Math.abs(cur.y - prev.y) < 1) return cur;
+      prev = cur;
+    }
+    return prev;
+  };
+  let box = await settled();
+  if (!box) return;
+  await humanGlide(page, box.x + box.width / 2, box.y + box.height / 2);
+  const again = await settled();
+  if (!again) return;
+  if (Math.abs(again.y - box.y) > 2 || Math.abs(again.x - box.x) > 2) {
+    box = again;
+    await humanGlide(page, box.x + box.width / 2, box.y + box.height / 2);
+  }
+  await humanClick(page);
+  await sleep(between(250, 500));
+}
+
+/**
+ * Colour scheme the app under test is filmed in. The stage is dark (`colorScheme: 'dark'`,
+ * `--force-dark-mode`) for the docs site and the simulated windows, but a demo app that follows
+ * `prefers-color-scheme` then turns its page background near-black: create-next-app's globals.css
+ * sets `--background: #0a0a0a` in dark mode while CopilotChat stays light and only as tall as its
+ * content. The clip showed a white strip at the top and ~80% black below for the whole demo
+ * (LANGGRAPH-react-13-Components, ANTIGRAVITY-react-08/09, LANGGRAPH-react-29, 2026-11-09). It
+ * looked like a partial paint but was the app's own dark-mode page under a light chat.
+ * A reader opening the app with default OS settings sees it light, and `probe` (no colorScheme)
+ * already sees it light, so the demo origin is filmed light. `QA_DEMO_COLOR_SCHEME=dark|light|keep`
+ * overrides (keep = leave the stage scheme alone).
+ */
+const DEMO_COLOR_SCHEME = ((): 'light' | 'dark' | 'keep' => {
+  const v = (process.env.QA_DEMO_COLOR_SCHEME ?? 'light').toLowerCase();
+  return v === 'dark' || v === 'keep' ? v : 'light';
+})();
+
+/**
+ * Switches the emulated colour scheme as the main frame navigates: the demo origin gets
+ * DEMO_COLOR_SCHEME, everything else (docs site, the simulated IDE / terminal routes served on the
+ * demo origin) gets the stage's dark. Set on the navigation *request*, before the new document
+ * paints, so no frame is drawn in the wrong scheme.
+ */
+function followDemoColorScheme(page: Page, demoUrl: string): void {
+  if (DEMO_COLOR_SCHEME === 'keep') return;
+  let origin = '';
+  try {
+    origin = new URL(demoUrl).origin;
+  } catch {
+    return;
+  }
+  let current: 'light' | 'dark' = 'dark';
+  const schemeFor = (url: string): 'light' | 'dark' | null => {
+    try {
+      const u = new URL(url);
+      if (u.protocol === 'about:' || u.protocol === 'data:') return null;
+      return u.origin === origin && !u.pathname.startsWith('/__autorecord') ? (DEMO_COLOR_SCHEME as 'light' | 'dark') : 'dark';
+    } catch {
+      return null;
+    }
+  };
+  const apply = async (url: string): Promise<void> => {
+    const want = schemeFor(url);
+    if (!want || want === current || page.isClosed()) return;
+    current = want;
+    await page.emulateMedia({ colorScheme: want }).catch(() => {});
+  };
+  page.on('request', (req) => {
+    if (!req.isNavigationRequest() || req.frame() !== page.mainFrame()) return;
+    void apply(req.url());
+  });
+}
+
+export class RecordingEngine {
+  private readonly videosDir: string;
+  private readonly rootDir: string;
+  private readonly tempVideoDir: string;
+  /**
+   * One Chromium for the whole run. Every take used to launch and tear down
+   * its own browser, which cost about five seconds per page off camera; the
+   * context (and with it the video) is still fresh per take, so the clips are
+   * unchanged. `shutdown()` closes it once the suite is done.
+   */
+  private browser?: Browser;
+
+  constructor(rootDir: string) {
+    this.rootDir = rootDir;
+    this.videosDir = join(rootDir, 'autorecorder', 'videos');
+    this.tempVideoDir = join(this.videosDir, '.temp_chunks');
+    if (!existsSync(this.videosDir)) {
+      mkdirSync(this.videosDir, { recursive: true });
+    }
+    if (!existsSync(this.tempVideoDir)) {
+      mkdirSync(this.tempVideoDir, { recursive: true });
+    }
+  }
+
+  /**
+   * Launches the browser and opens a video-recording page.
+   *
+   * Shared by page recordings and CLI recordings so both produce video with
+   * identical launch flags, viewport and colour scheme — a terminal clip that
+   * differed in any of those would cut against the rest of the suite.
+   */
+  private async openStage(warmUrl?: string, docStorage?: Record<string, string>): Promise<{
+    browser: Browser;
+    context: BrowserContext;
+    page: Page;
+  }> {
+    if (!this.browser || !this.browser.isConnected()) {
+      this.browser = await chromium.launch({
+        headless: false,
+        args: [
+          '--start-maximized',
+          '--force-dark-mode',
+          '--background-color=#1e1e1e',
+        ],
+      });
+    }
+    const browser = this.browser;
+
+    const context = await browser.newContext({
+      viewport: { width: 1920, height: 1080 },
+      colorScheme: 'dark',
+      recordVideo: {
+        dir: this.tempVideoDir,
+        size: { width: 1920, height: 1080 },
+      },
+    });
+
+    // A page's `docStorage` (e.g. the docs site's persisted framework tab) is in place before the
+    // first script of every page runs, warm-up included.
+    if (docStorage && Object.keys(docStorage).length) {
+      await context.addInitScript((entries: Record<string, string>) => {
+        try {
+          for (const [k, v] of Object.entries(entries)) localStorage.setItem(k, v);
+        } catch {}
+      }, docStorage);
+    }
+
+    // Playwright starts recording the moment a page is created, so however long
+    // the first navigation takes is dead footage at the head of every video.
+    // Warming the doc URL in a throwaway page of the same context primes DNS,
+    // TLS and the HTTP cache, which measured 1717ms -> 843ms on the real page.
+    if (warmUrl) {
+      const warmup = await context.newPage();
+      await warmup
+        .goto(warmUrl, { waitUntil: 'domcontentloaded', timeout: 20000 })
+        .catch(() => {});
+      const warmupVideo = warmup.video();
+      await warmup.close().catch(() => {});
+      await warmupVideo?.delete().catch(() => {});
+    }
+
+    const page = await context.newPage();
+    startTimeline(page); // the video starts with this page; logs console/network/navigation too
+
+    // about:blank computes to rgba(0,0,0,0) and paints pure black regardless of
+    // --background-color, so the residual lead-in reads as a black screen.
+    // Paint it VS Code grey instead, so the head of the video looks deliberate.
+    await page
+      .evaluate(() => {
+        document.documentElement.style.background = '#1e1e1e';
+        if (document.body) document.body.style.background = '#1e1e1e';
+      })
+      .catch(() => {});
+
+    return { browser, context, page };
+  }
+
+  /**
+   * Saves the recorded video and tears the browser down.
+   *
+   * Returns the filename actually written, which is what the summary reports.
+   */
+  private async closeStage(
+    browser: Browser,
+    context: BrowserContext,
+    page: Page,
+    baseFilename: string,
+    announceSuccess: boolean,
+    subdir?: string,
+  ): Promise<string> {
+    const video = page.video();
+    // Last frame and outstanding probes while the page can still answer them. Logging only.
+    await endTimeline().catch(() => {});
+    await page.close().catch(() => {});
+    await context.close().catch(() => {});
+
+    let savedFilename = '';
+    if (video) {
+      savedFilename = `${baseFilename}.webm`;
+      // CLI recordings land in their own folder: they are a different kind of
+      // artifact from the per-doc-page clips, and mixing them makes a directory
+      // listing useless for finding either.
+      const targetDir = subdir ? join(this.videosDir, subdir) : this.videosDir;
+      mkdirSync(targetDir, { recursive: true });
+      const finalWebm = join(targetDir, savedFilename);
+      try {
+        if (existsSync(finalWebm)) unlinkSync(finalWebm);
+        await video.saveAs(finalWebm);
+        saveTimeline(finalWebm.replace(/[.]webm$/, '.timeline.json'), baseFilename);
+        await video.delete().catch(() => {});
+        if (announceSuccess) {
+          console.log(`\n🎥 [RECORDING SUCCESSFUL]: ${finalWebm}\n`);
+        }
+      } catch (err) {
+        console.warn(`Video save note: ${err}`);
+      }
+    }
+
+    // The browser stays up for the next take; see `shutdown()`.
+    void browser;
+
+    // Playwright's raw chunk lands here before saveAs moves it out. Nothing
+    // should survive the run; left alone it accumulated one stray .webm per
+    // recording, gitignored and invisible.
+    try {
+      rmSync(this.tempVideoDir, { recursive: true, force: true });
+    } catch {}
+
+    return savedFilename;
+  }
+
+  /**
+   * Selects lines `from..to` of IDE view `idx` the way a person does: cursor
+   * to the start of the first line, press, drag down the lines, release. The
+   * highlight follows the cursor line by line (window.selectIdeLines in the
+   * IDE template). Returns the milliseconds it took, so the caller can take
+   * them out of the dwell that follows. Falls back to painting the range at
+   * once if the lines cannot be found, so a take never loses its highlight.
+   */
+  private async dragSelectSnippet(page: Page, idx: number, from: number, to: number): Promise<number> {
+    const started = Date.now();
+    const rowBox = async (n: number) => {
+      const row = page.locator(`#ide-view-${idx} .code-line[data-line="${n}"] .line-content`);
+      return (await row.isVisible({ timeout: 1500 }).catch(() => false)) ? row.boundingBox() : null;
+    };
+    const first = await rowBox(from);
+    const lastVisible = await rowBox(to);
+    const paint = (upTo: number) =>
+      page.evaluate(`window.selectIdeLines && window.selectIdeLines(${idx}, ${from}, ${upTo})`).catch(() => {});
+
+    if (!first) {
+      await paint(to);
+      await humanGlide(page, 520, 360, 18);
+      return Date.now() - started;
+    }
+
+    // Press at the start of the first line.
+    await humanGlide(page, first.x + 6, first.y + first.height / 2, 18);
+    await sleep(between(60, 140));
+    await page.evaluate(`(function(){var c=document.getElementById('playwright-virtual-mouse');if(c)c.style.transform='translate(-4px, -2px) scale(0.9)';})()`).catch(() => {});
+    await paint(from);
+
+    // Drag down: one visual step per line, faster on long ranges, a little
+    // uneven like a hand on a mouse. Whole selection bounded at ~1.2s.
+    const lines = Math.max(1, to - from);
+    const stepMs = Math.min(45, Math.max(14, 1100 / lines));
+    const bottom = lastVisible ? lastVisible.y + lastVisible.height / 2 : first.y + lines * first.height;
+    for (let n = from + 1; n <= to; n++) {
+      const t = (n - from) / lines;
+      const y = first.y + first.height / 2 + (bottom - first.y - first.height / 2) * t;
+      const x = first.x + 6 + Math.min(240, (n - from) * 9) + between(-3, 3);
+      await page.evaluate(`(function(){var c=document.getElementById('playwright-virtual-mouse');if(c){c.style.left='${x.toFixed(1)}px';c.style.top='${y.toFixed(1)}px';}})()`).catch(() => {});
+      await paint(n);
+      await sleep(jitter(stepMs, 0.35));
+    }
+
+    // Release, and leave the cursor resting on the selection.
+    await sleep(between(50, 110));
+    await page.evaluate(`(function(){var c=document.getElementById('playwright-virtual-mouse');if(c)c.style.transform='translate(-4px, -2px) scale(1)';})()`).catch(() => {});
+    return Date.now() - started;
+  }
+
+  /** Closes the shared browser. Call once, after the last take. */
+  async shutdown(): Promise<void> {
+    const browser = this.browser;
+    this.browser = undefined;
+    if (browser) await browser.close().catch(() => {});
+  }
+
+  /**
+   * Step 1 of every take: the doc page, read at human pace, then a taskbar
+   * click to whatever comes next.
+   *
+   * Shared by page and CLI recordings. It used to be written out twice, and the
+   * two copies had already drifted apart (different scroll depths, one with the
+   * code-block glide and one without).
+   *
+   * @returns null on success, else a note for `warnings`. The doc site is
+   *   external and not the thing under test, so a bad fetch degrades the intro
+   *   rather than invalidating the recording.
+   */
+  private async showDocPage(
+    page: Page,
+    docUrl: string,
+    nextApp: 'vscode' | 'chrome' | 'terminal',
+    timeouts: RecorderTimeouts,
+  ): Promise<string | null> {
+    console.log(`\n📖 Step 1: Navigating to Official Doc (${docUrl})...`);
+    try {
+      await page.goto(docUrl, { waitUntil: 'domcontentloaded', timeout: timeouts.docNavMs });
+
+      // Fast check for doc header / content readiness
+      await page
+        .waitForSelector(SELECTORS.docContentReady, { state: 'visible', timeout: 5000 })
+        .catch(() => {});
+
+      // Overlays go on immediately so the taskbar is present from the first
+      // frame. They survive hydration on their own now -- ensureOverlays
+      // installs a MutationObserver that re-attaches them if React deletes
+      // them while reconciling <html>.
+      await ensureOverlays(page, 'chrome');
+
+      // Scrolling is the part that must wait: a hydration remount snaps the
+      // page back to the top mid-scroll. Start the wait now and let the intro
+      // play over it rather than stalling on a frozen frame.
+      const hydration = waitForHydration(page, 15000);
+
+      // Crisp pause so viewer registers the doc title, then glide straight into reading
+      await sleep(500);
+      await humanGlide(page, 960, 380, 16);
+
+      if (!(await hydration)) {
+        console.warn(`   ⚠️ Doc page hydration not observed within 15s; scrolling anyway.`);
+      }
+
+      // Skim the whole page to the bottom in wheel bursts, so the clip shows
+      // all of the doc, then come back up to its first code block.
+      console.log(`   Skimming the doc page to the bottom...`);
+      await humanScrollDown(page, 20000, 4500, { toBottom: true });
+      // A late hydration remount resets the scroller to the top. If that
+      // happened under the skim, do it once more now that the page is settled.
+      if ((await docScrollTop(page)) < 200) {
+        console.log(`   Page snapped back to the top (late hydration); skimming again...`);
+        await pause(400);
+        await humanScrollDown(page, 20000, 4500, { toBottom: true });
+      }
+      await pause(500);
+      const codeBox = await scrollDocCodeBlockIntoView(page);
+      if (codeBox) {
+        // Select the snippet on the doc page with the cursor -- the same
+        // gesture the IDE step makes on the project file a moment later, so
+        // the two read as "this code, in our file".
+        await dragSelectDocCode(page, codeBox);
+      } else {
+        await humanGlide(page, 650, 450, 18);
+      }
+      // A beat on the selected snippet before switching apps.
+      await pause(900);
+
+      console.log(`   🖱️ Switching to ${nextApp} via Windows 11 Taskbar...`);
+      await clickTaskbarApp(page, nextApp);
+      return null;
+    } catch (e) {
+      const note = `Doc page (${docUrl}): ${diagnoseError(e, 'doc-page')}`;
+      console.warn(`⚠️ Doc navigation notice -- ${note}`);
+      await sleep(600);
+      return note;
+    }
+  }
+
+  /**
+   * Step 2: the simulated IDE, one tab per file, each scrolled to and rested on
+   * its highlighted range.
+   *
+   * Served from `origin` via an intercepted route and navigated to, rather
+   * than document.write()-ed into the doc page. document.write leaves the
+   * document's URL as the doc URL, so the doc page is only ever one renderer
+   * hiccup away from resurfacing -- and because the IDE HTML wipes the doc's
+   * <link> tags, when it does come back it comes back unstyled. A real
+   * navigation destroys that document outright. It also makes the IDE -> demo
+   * hop a SAME-ORIGIN navigation, so there is no cross-origin process swap. The
+   * response is fulfilled from memory, and the IDE paints #1e1e1e -- matching
+   * the browser's --background-color launch arg, so there is no white flash.
+   *
+   * Throws on failure: the IDE view is generated from local files, so a
+   * failure here is a real defect in this repo, never a flaky-network excuse.
+   */
+  private async showIde(
+    page: Page,
+    tabs: IdeTabConfig[],
+    origin: string,
+    opts: { dwellMs: number; clickTabs: boolean },
+  ): Promise<void> {
+    const [first, ...extra] = tabs;
+    const ideHtml = await generateIdeHtml(
+      this.rootDir,
+      first.filePath,
+      first.startLine,
+      first.endLine,
+      extra,
+      0,
+    );
+    const ideUrl = new URL(IDE_ROUTE_PATH, origin).toString();
+    await page.route(ideUrl, (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: withWindowFade(ideHtml) }),
+    );
+    await page.goto(ideUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await ensureOverlays(page, 'vscode');
+    await sleep(300);
+
+    for (let idx = 0; idx < tabs.length; idx++) {
+      if (idx > 0) {
+        console.log(`   🖱️ Switching tab to ${basename(tabs[idx].filePath)} in VS Code...`);
+        const tabLocator = page.locator(`#ide-tab-${idx}`);
+        const tBox = opts.clickTabs && (await tabLocator.isVisible().catch(() => false))
+          ? await tabLocator.boundingBox()
+          : null;
+        if (tBox) {
+          await humanGlide(page, tBox.x + tBox.width / 2, tBox.y + tBox.height / 2, 18);
+          await humanClick(page);
+        } else {
+          await page.evaluate(`window.switchIdeTab && window.switchIdeTab(${idx})`);
+        }
+        await sleep(idx > 0 && !opts.clickTabs ? 500 : 300);
+      }
+
+      // Scroll, then select the snippet by hand -- scoped to the active tab.
+      await humanScrollCodeViewport(page, tabs[idx].startLine, idx);
+      const dragMs = await this.dragSelectSnippet(page, idx, tabs[idx].startLine, tabs[idx].endLine);
+      // The drag is time spent looking at the code, so it comes out of the
+      // dwell rather than on top of it; the take stays the same length.
+      await pause(Math.max(600, opts.dwellMs - dragMs));
+
+    }
+
+    // Bounded, because unbounded it can hang the whole run. `unroute` waits for
+    // in-flight handlers of the route it removes, and after some doc pages one
+    // never settles: seen 4/4 on the Learning page, whose Loom embed is the one
+    // thing it has that the others don't. The IDE window is finished with by
+    // now either way, and a leftover handler on a URL nothing else requests is
+    // harmless.
+    await Promise.race([page.unroute(ideUrl).catch(() => {}), sleep(3000)]);
+  }
+
+  /**
+   * Navigates to a terminal window and plays a cast through to the end.
+   *
+   * The frontend does not have to be running: the page is served by
+   * intercepting a URL on the frontend's origin and fulfilling it from memory,
+   * exactly as the simulated IDE is, so nothing reaches the network.
+   *
+   * Replay is driven inside the page rather than by writing bytes over CDP,
+   * which would put a round trip between every character.
+   */
+  private async playCastInTerminal(
+    page: Page,
+    opts: { cast: Cast; title?: string; origin?: string },
+  ): Promise<void> {
+    const terminalUrl = await this.openTerminalWindow(page, opts);
+
+    await page.evaluate(`window.__startCastReplay && window.__startCastReplay()`);
+
+    // The replay's own duration plus slack. A cast that plays for four minutes
+    // needs a wait longer than four minutes, so this cannot be a constant.
+    const replayTimeoutMs = castDuration(opts.cast) * 1000 + 60_000;
+    await page.waitForFunction(`window.__castReplayDone === true`, undefined, {
+      timeout: replayTimeoutMs,
+      polling: 250,
+    });
+
+    // The route stays registered for the life of the page; unrouting keeps a
+    // second terminal segment on the same page from being served the first
+    // one's HTML.
+    // Bounded for the same reason as the IDE route above.
+    await Promise.race([page.unroute(terminalUrl).catch(() => {}), sleep(3000)]);
+  }
+
+  /** Serves the terminal window for `opts.cast` and navigates to it. Returns its URL. */
+  private async openTerminalWindow(
+    page: Page,
+    opts: { cast: Cast; title?: string; origin?: string },
+  ): Promise<string> {
+    const terminalHtml = withWindowFade(generateTerminalHtml({ cast: opts.cast, title: opts.title }));
+    const terminalUrl = new URL(
+      TERMINAL_ROUTE_PATH,
+      opts.origin ?? PROJECT.frontendUrl,
+    ).toString();
+
+    await page.route(terminalUrl, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: terminalHtml,
+      }),
+    );
+    await page.goto(terminalUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await ensureOverlays(page, 'terminal');
+    await sleep(400);
+    return terminalUrl;
+  }
+
+  /**
+   * Closes a failed take on the evidence: the log file always, and, when the
+   * page can still be driven, a REAL terminal: a shell spawned with node-pty in
+   * the repo root, ordinary commands typed into it (`ls logs/`, `tail`, `grep`
+   * on this repo's server logs), and its output streamed into the terminal
+   * window live, byte for byte. Nothing on screen is written by the recorder
+   * (failure-terminal.ts). The session is also saved as
+   * `videos/logs/<page-id>.error-terminal.cast`. Bounded, so a wedged page or
+   * shell cannot turn a 60-second failure into a 5-minute one.
+   */
+  private async showFailureEvidence(
+    page: Page,
+    pageId: string,
+    error: string,
+    consoleEntries: ConsoleEntry[],
+    logs: LogSource[],
+    logsDir: string,
+  ): Promise<void> {
+    let evidence;
+    try {
+      evidence = buildFailureEvidence({ pageId, error, consoleEntries, logs });
+      const file = writeFailureLog(logsDir, evidence);
+      console.log(`   📝 Failure evidence: ${file}`);
+    } catch (e) {
+      console.warn(`   Evidence note: could not write the error log: ${e}`);
+      return;
+    }
+    if (page.isClosed()) return;
+    const shell = pickShell();
+    if (!shell) {
+      console.warn('   Evidence note: no bash/powershell found, terminal not shown on camera');
+      return;
+    }
+    const title = `Error console — ${pageId}`;
+    const cols = 120;
+    const rows = 32;
+    const abort = { aborted: false };
+    // PTY chunks go to the window in order, one evaluate at a time.
+    let writes: Promise<unknown> = Promise.resolve();
+    const write = (data: string): void => {
+      writes = writes
+        .then(() => page.evaluate(`window.__termWrite && window.__termWrite(${JSON.stringify(data)})`))
+        .catch(() => {});
+    };
+    try {
+      await Promise.race([
+        (async () => {
+          await sleep(800);
+          await this.openTerminalWindow(page, {
+            cast: {
+              header: { version: 2, width: cols, height: rows, timestamp: Math.floor(Date.now() / 1000), title },
+              events: [],
+            },
+            title,
+          });
+          await sleep(500);
+          const run = await runFailureTerminal({
+            rootDir: this.rootDir,
+            logs,
+            title,
+            cols,
+            rows,
+            onData: write,
+            signal: abort,
+            // Which silent, crashed server logs belong to this take (never another page's dead server).
+            takeText: [error, ...consoleEntries.map((e) => `${e.text} ${e.source ?? ''}`)].join('\n'),
+          });
+          await writes;
+          console.log(`   🖥️  Failure terminal (${run.shell}): ${run.commands.join('  ;  ')}`);
+          try {
+            const castFile = join(logsDir, `${pageId}.error-terminal.cast`);
+            writeCast(castFile, run.cast);
+            console.log(`   📝 Failure terminal cast: ${castFile}`);
+          } catch {}
+          // Hold on the last output so it can be read before the clip ends.
+          await sleep(2500);
+        })(),
+        sleep(90_000).then(() => {
+          throw new Error('failure terminal did not finish in 90s');
+        }),
+      ]);
+    } catch (e) {
+      abort.aborted = true;
+      console.warn(`   Evidence note: terminal not shown on camera: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+
+  /**
+   * Films a captured CLI session: the doc page it belongs to, then a terminal
+   * window replaying the cast.
+   *
+   * Deliberately reads from a cast rather than driving a live terminal. The CLI
+   * has already run, once, under `npm run capture` — this is the render pass,
+   * so a re-shoot costs seconds and never re-scaffolds a project or asks anyone
+   * to sign in again. See `core/cli/cast.ts`.
+   */
+  async recordCliFlow(req: CliRecordRequest): Promise<RecordResult> {
+    console.log(`\n======================================================`);
+    console.log(`🎬 RECORDING CLI: ${req.name} (${req.id})`);
+    console.log(`======================================================`);
+
+    seedTake(req.id);
+    restCursorSomewhere();
+
+    const warnings: string[] = [];
+    const timeouts = timeoutsFor();
+    let recordError: string | undefined;
+    let finalSavedFilename = '';
+
+    const { browser, context, page } = await this.openStage(req.docUrl);
+    setTimelinePage(req.id, req.docUrl);
+    setNotepadClip(this.rootDir, req.filename ?? req.id); // Notepad stays up for its voice-over
+
+    try {
+      // ----------------------------------------------------
+      // STEP 1: THE DOC PAGE THIS FLOW IS EVIDENCE FOR
+      // ----------------------------------------------------
+      if (req.docUrl) {
+        mark('doc');
+        const note = await this.showDocPage(
+          page,
+          req.docUrl,
+          req.ideTabs?.length ? 'vscode' : 'terminal',
+          timeouts,
+        );
+        if (note) warnings.push(note);
+      }
+
+      // ----------------------------------------------------
+      // STEP 1b: THE CODE THE FINDING IS ABOUT
+      // ----------------------------------------------------
+      if (req.ideTabs?.length) {
+        mark('ide');
+        console.log(`\n💻 Step 1b: Showing ${req.ideTabs.length} file(s) in VS Code...`);
+        await this.showIde(page, req.ideTabs, PROJECT.frontendUrl, {
+          dwellMs: req.ideDwellMs ?? 3800,
+          clickTabs: false,
+        });
+        console.log(`   🖱️ Switching to Terminal via Windows 11 Taskbar...`);
+        await clickTaskbarApp(page, 'terminal');
+      }
+
+      // ----------------------------------------------------
+      // STEP 2: TERMINAL WINDOW REPLAYING THE CAPTURED SESSION
+      // ----------------------------------------------------
+      for (const [i, segment] of req.segments.entries()) {
+        mark('terminal', segment.title);
+        console.log(
+          `\n⌨️  Step 2.${i + 1}: Replaying ${segment.title ?? 'terminal cast'} ` +
+            `(${segment.cast.events.length} events, ${castDuration(segment.cast).toFixed(1)}s)...`,
+        );
+        await this.playCastInTerminal(page, {
+          cast: segment.cast,
+          title: segment.title,
+        });
+      }
+
+      console.log(`   ✅ Replay complete (${req.segments.length} segment(s)).`);
+
+      // ----------------------------------------------------
+      // STEP 3: THE FINDING, WRITTEN OUT
+      // ----------------------------------------------------
+      if (req.notepad) {
+        console.log(`\n📝 Step 3: Writing the finding in Notepad...`);
+        mark('notepad');
+        await openNotepad(page, req.notepad.filename);
+        await typeInNotepad(page, req.notepad.body, { charDelayMs: req.notepad.charDelayMs });
+        await closeNotepad(page);
+        mark('notepad-closed');
+      }
+    } catch (e) {
+      recordError = `CLI replay failed: ${diagnoseError(e, 'cli-replay')}`;
+      console.error(`❌ ${recordError}`);
+    } finally {
+      finalSavedFilename = await this.closeStage(
+        browser,
+        context,
+        page,
+        req.filename,
+        !recordError,
+        req.subdir,
+      );
+    }
+
+    return {
+      success: !recordError,
+      filename: finalSavedFilename,
+      error: recordError,
+      warnings,
+    };
+  }
+
+  async recordPage(config: PageRecordConfig): Promise<RecordResult> {
+    console.log(`\n======================================================`);
+    console.log(`🎬 RECORDING: ${config.name} (${config.id})`);
+    console.log(`======================================================`);
+
+    seedTake(config.id);
+    restCursorSomewhere();
+
+    const timeouts = timeoutsFor(config);
+    let recordSuccess = false;
+    let recordError: string | undefined;
+    let finalSavedFilename = '';
+    const warnings: string[] = [];
+
+    // Where the server logs stand as this take begins. If it fails, the
+    // evidence shown is this page's slice of the logs, not the whole run's.
+    const logsDir = join(this.videosDir, 'logs');
+    const logSources: LogSource[] = snapshotLogOffsets(logsDir, [join(this.rootDir, 'logs')]);
+
+    /** A step that renders the thing under test failed -- the video is not usable. */
+    const fail = (message: string): void => {
+      if (!recordError) recordError = message;
+    };
+
+    // What the page handler reports. `fail` does not throw: the take runs to
+    // the end so the clip still shows the failure, and the verdict is applied
+    // once the handler returns.
+    const actionFailures: string[] = [];
+    const ctx: ActionContext = {
+      warn: (message) => {
+        warnings.push(message);
+        console.log(`   ⚠️  ${message}`);
+      },
+      fail: (message) => {
+        actionFailures.push(message);
+        console.error(`   ❌ ${message}`);
+      },
+      timeouts,
+    };
+
+    // A page that brings its own dev server starts it before anything is filmed:
+    // the boot cast has to exist before it can be replayed, and the app has to be
+    // serving before the demo step reaches it. Failing here aborts the recording
+    // rather than producing a full-length video of a connection refused.
+    let service: RunningService | undefined;
+    if (config.devServer) {
+      try {
+        service = await startService(
+          {
+            // The page the demo step opens is the page worth warming — see
+            // `warmUrl` in service.ts. The port comes from where the demo will
+            // be reached, so a squatter there is caught before anything is
+            // filmed. Config may still override either.
+            warmUrl: config.demoUrl,
+            port: Number(new URL(config.devServer.originUrl).port) || undefined,
+            ...config.devServer,
+          },
+          {
+            rootDir: this.rootDir,
+            title: config.devServer.title,
+          },
+        );
+      } catch (e) {
+        const detail = e instanceof ServiceStartError ? `\n${e.tail}` : '';
+        const error = `Dev server failed to start: ${e instanceof Error ? e.message : String(e)}${detail}`;
+        // No browser to film this in; the log file is the only evidence.
+        try {
+          writeFailureLog(logsDir, buildFailureEvidence({ pageId: config.id, error, logs: logSources }));
+        } catch {}
+        return { success: false, filename: '', error, warnings: [] };
+      }
+    }
+
+    const { browser, context, page } = await this.openStage(config.docUrl, config.docStorage);
+    setTimelinePage(config.id, config.docUrl);
+    setNotepadClip(this.rootDir, config.filename ?? config.id); // Notepad stays up for its voice-over
+
+    // Console errors, page errors and failed backend requests, kept rather than
+    // printed and forgotten. They go on the result so the summary and the
+    // results file can show them next to the clip they belong to. Started at the
+    // demo step, not here: the doc site's own console is not under test, and
+    // it logs a dozen hydration errors of its own on every load.
+    let console_: ReturnType<typeof captureConsole> | undefined;
+
+    // Attach global dialog handler so unexpected alerts don't stall recordings
+    page.on('dialog', async (dialog) => {
+      console.log(`   [Dialog Event] "${dialog.message()}"`);
+      await sleep(400);
+      try {
+        await dialog.accept();
+      } catch {}
+    });
+
+    try {
+      // ----------------------------------------------------
+      // STEP 1: OFFICIAL DOC PAGE & HUMAN READING SCROLL
+      // ----------------------------------------------------
+      // A docOnly page has nothing after the doc read: no source worth
+      // showing, no dev server, no route to drive. Hold on the page, then the
+      // take is done -- and the taskbar click into VS Code is skipped, since
+      // there is no VS Code segment to click into.
+      if (config.docOnly) {
+        mark('doc');
+        const docNote = await this.showDocPage(page, config.docUrl, 'chrome', timeouts);
+        if (docNote) warnings.push(docNote);
+        console.log(`   📄 Page is doc-only (empty section). Pausing for viewing...`);
+        await pause(config.docViewDurationMs ?? 6000);
+        if (config.docOnlyAction) {
+          // A doc-only finding: the page's action highlights the faulty text and types the note.
+          mark('action');
+          await executePageAction(page, config, this.rootDir, ctx);
+          if (actionFailures.length > 0) fail(actionFailures.join('; '));
+        }
+        console.log(`✅ Doc-only recording completed for ${config.id}.`);
+        recordSuccess = !recordError;
+        throw new DocOnlyDone();
+      }
+
+      mark('doc');
+      const docNote = await this.showDocPage(page, config.docUrl, 'vscode', timeouts);
+      if (docNote) warnings.push(docNote);
+
+      // ----------------------------------------------------
+      // STEP 2: SHOW PROJECT CODE IN VS CODE IDE WITH SNIPPET SELECTION
+      // ----------------------------------------------------
+      mark('ide');
+      const hasExtraTabs = Boolean(config.extraTabs && config.extraTabs.length > 0);
+      console.log(
+        `\n💻 Step 2: Displaying Project Code in VS Code IDE (${config.ideFile}: lines ${config.startLine}-${config.endLine})...`,
+      );
+      try {
+        await this.showIde(
+          page,
+          [
+            { filePath: config.ideFile, startLine: config.startLine, endLine: config.endLine },
+            ...(config.extraTabs ?? []),
+          ],
+          config.demoUrl,
+          { dwellMs: hasExtraTabs ? 1500 : 1800, clickTabs: true },
+        );
+
+        // Straight to the terminal when this page has a server to show starting;
+        // otherwise back to the browser for the demo.
+        const nextApp = service ? 'terminal' : 'chrome';
+        console.log(`   🖱️ Switching to ${nextApp} via Windows 11 Taskbar...`);
+        await clickTaskbarApp(page, nextApp);
+      } catch (e) {
+        const msg = `IDE view failed: ${diagnoseError(e, 'ide-simulation')}`;
+        fail(msg);
+        console.error(`❌ ${msg}`);
+        await sleep(600);
+      }
+
+      // ----------------------------------------------------
+      // STEP 2b: THE DEV SERVER BOOTING, IN A TERMINAL
+      // ----------------------------------------------------
+      if (service) {
+        mark('terminal', 'dev server boot');
+        console.log(
+          `\n⌨️  Step 2b: Replaying dev server boot (${service.bootSeconds}s to ready)...`,
+        );
+        try {
+          await this.playCastInTerminal(page, {
+            cast: compressCast(service.cast, {
+              maxGapSec: config.devServer?.render?.maxGapSec ?? 0.8,
+              speed: config.devServer?.render?.speed ?? 1.6,
+            }),
+            title: config.devServer?.title,
+          });
+          console.log(`   🖱️ Switching back to Chrome via Windows 11 Taskbar...`);
+          await clickTaskbarApp(page, 'chrome');
+        } catch (e) {
+          // The server is up — that was proven before filming started — so a
+          // failure here is the replay, not the project. Note it and carry on to
+          // the demo rather than throwing away a recording of a working app.
+          const note = `Dev server terminal replay: ${diagnoseError(e, 'cli-replay')}`;
+          warnings.push(note);
+          console.warn(`⚠️ ${note}`);
+        }
+      }
+
+      // ----------------------------------------------------
+      // STEP 3: FRONTEND DEMO PAGE & TAILORED ACTION EXECUTION
+      // ----------------------------------------------------
+      mark('demo');
+      console.log(`\n🚀 Step 3: Opening Demo (${config.demoUrl})...`);
+      console_ = captureConsole(page);
+      try {
+        // Belt-and-braces: paint the outgoing document dark so that even a slow
+        // demo compile holds on a dark frame rather than anything bright.
+        await page.evaluate(`
+          (function() {
+            document.body.style.backgroundColor = '#0f172a';
+            document.body.style.transition = 'none';
+          })()
+        `).catch(() => {});
+
+        // The demo origin is filmed in DEMO_COLOR_SCHEME (light by default); see there for why.
+        // Applied on the navigation request, not now: the outgoing window keeps its own look.
+        followDemoColorScheme(page, config.demoUrl);
+
+        const response = await page.goto(config.demoUrl, {
+          waitUntil: 'domcontentloaded',
+          timeout: timeouts.demoNavMs,
+        });
+
+        // A 404/500 used to sail through as a PASS -- the route simply did not exist.
+        const status = response?.status() ?? 0;
+        if (status >= 400 && config.demoMayError) {
+          // Expected: the doc's code errors on this route. Film it; the page action continues.
+          console.warn(`   ⚠️ Demo route returned HTTP ${status} (expected for this page: demoMayError).`);
+        } else if (status >= 400) {
+          throw new Error(
+            `Demo route returned HTTP ${status} (${config.demoUrl})`,
+          );
+        }
+
+        // Our demo pages are App Router too, so React will delete the overlays
+        // when it hydrates -- but the guard inside ensureOverlays re-attaches
+        // them. No wait here: nothing scrolls this page, and if hydration has
+        // already finished the probe would never fire and just burn its timeout.
+        await ensureOverlays(page, 'chrome');
+
+        // Wait for page body and chat element readiness
+        console.log(`   ⏳ Waiting for Next.js compilation & React hydration to settle...`);
+        await page.waitForSelector('body', { timeout: 10000 }).catch(() => {});
+
+        // Next.js dev refuses its own chunks when the page is opened on a host
+        // it does not list -- 127.0.0.1 instead of localhost, typically. The
+        // page paints from the server render, React never hydrates, and the
+        // take then spends two minutes retyping into a composer that cannot
+        // submit. The 403s are on the console the moment the page loads, so
+        // say what happened now rather than "agent never responded" later.
+        const blocked = console_?.entries.find(
+          (e) => /\/_next\/static\/.*(403|ERR_ABORTED)/.test(e.text) || /Blocked cross-origin/i.test(e.text),
+        );
+        if (blocked) {
+          throw new Error(
+            `Next.js dev server refused its own chunks (${blocked.text.slice(0, 120)}). ` +
+              `The page will never hydrate. Open the frontend on the host Next lists as Local -- ` +
+              `usually http://localhost:<port>, not 127.0.0.1 -- or add the host to allowedDevOrigins in next.config.`,
+          );
+        }
+        // No .catch() here: if the demo never renders an interactive surface there
+        // is nothing to record, and that must fail rather than warn.
+        if (config.demoMayError) {
+          // The route may never render a chat: settle on whatever it shows (usually the error overlay).
+          await page.waitForSelector(SELECTORS.chatReady, { state: 'visible', timeout: 15000 }).catch(() => {});
+          await sleep(1000);
+        } else {
+          await page.waitForSelector(SELECTORS.chatReady, {
+            state: 'visible',
+            timeout: timeouts.chatReadyMs,
+          });
+          await sleep(1000);
+          await dismissNextIssues(page);
+        }
+
+        // Dispatch specific demo actions
+        mark('action');
+        await executePageAction(page, config, this.rootDir, ctx);
+
+        if (actionFailures.length > 0) {
+          throw new Error(actionFailures.join('; '));
+        }
+
+        console.log(`✅ Demo execution completed for ${config.id}.`);
+        await pause(1500);
+      } catch (e) {
+        const msg = `Demo step failed: ${diagnoseError(e, config.demoUrl)}`;
+        fail(msg);
+        console.error(`\n❌ [Demo Failure on ${config.id}]:\n${msg}\n`);
+        await sleep(1000);
+      }
+
+      recordSuccess = !recordError;
+    } catch (err: any) {
+      if (!(err instanceof DocOnlyDone)) {
+        recordError = err?.message || String(err);
+        recordSuccess = false;
+        console.error(`❌ Recording error for ${config.id}:`, recordError);
+      }
+    } finally {
+      console_?.stop();
+
+      // The app throwing is a failure, not a footnote. It used to become one
+      // warning line, so a page that crashed mid-take still reported PASS*.
+      const breaking = distinctErrors(breakingErrors(console_?.entries ?? []));
+      if (!recordError && breaking.length > 0) {
+        recordError =
+          `The app threw during the take (${breaking.length} distinct error(s)), first: ${breaking[0]}`;
+        recordSuccess = false;
+        console.error(`\n❌ [Page error on ${config.id}]: ${recordError}\n`);
+      }
+
+      // A failed take ends with the person opening a real terminal and reading
+      // this repo's server logs in it (tail / grep, typed live; see
+      // failure-terminal.ts). The diagnosed error, the browser console and the
+      // log slices go to videos/logs/<id>.error.log. Never lets an evidence
+      // problem hide the original failure.
+      if (recordError) {
+        mark('failure', recordError.slice(0, 160));
+        await this.showFailureEvidence(page, config.id, recordError, console_?.entries ?? [], logSources, logsDir);
+      }
+
+      finalSavedFilename = await this.closeStage(
+        browser,
+        context,
+        page,
+        config.filename ?? config.id,
+        recordSuccess,
+      );
+
+      // Always, including on the failure paths above: a dev server left running
+      // holds its port, and the next page in the run would find it occupied and
+      // silently record against the previous package manager's app.
+      if (service) {
+        console.log(`   🛑 Stopping dev server...`);
+        await service.stop();
+      }
+    }
+
+    const consoleErrors = distinctErrors(console_?.entries ?? []);
+    if (consoleErrors.length > 0) {
+      warnings.push(
+        `Browser console: ${consoleErrors.length} distinct error(s), first: ${consoleErrors[0]}`,
+      );
+    }
+
+    return {
+      success: recordSuccess,
+      filename: finalSavedFilename,
+      error: recordError,
+      warnings,
+      consoleErrors,
+    };
+  }
+}

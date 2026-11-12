@@ -1,0 +1,9 @@
+{
+ "text": "So there is no Vue quickstart to follow at all. No npm create vue, no CopilotKit Vue install, no runtime and no ADK agent. I had to wire the Vue app to an ADK backend myself.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 13.793,
+ "file": "a7c4377f6a1fcd8821ddf72763becf3e.mp3",
+ "clip": "ADK-vue-01-Quickstart",
+ "at": "notepad"
+}

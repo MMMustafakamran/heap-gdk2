@@ -1,0 +1,9 @@
+{
+ "text": "Ok so, the page here is just the ADK landing page, with a setup prompt wizard.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 7.198,
+ "file": "4bdd4f453dce166c2df14100a8307ae6.mp3",
+ "clip": "ADK-vue-01-Quickstart",
+ "at": "evidence"
+}

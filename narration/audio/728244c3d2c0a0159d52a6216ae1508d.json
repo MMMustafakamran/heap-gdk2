@@ -1,0 +1,9 @@
+{
+ "text": "But the page shows no agent at all. A plain ADK agent never gets the frontend tool, so there is no approval card. Same missing AGUI toolset step here.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 10.82,
+ "file": "728244c3d2c0a0159d52a6216ae1508d.mp3",
+ "clip": "ADK-vue-20-GovernedActions",
+ "at": "notepad"
+}

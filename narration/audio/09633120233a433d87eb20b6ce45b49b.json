@@ -1,0 +1,9 @@
+{
+ "text": "So here it says when the agent calls the tool, the component renders in the chat.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 6.316,
+ "file": "09633120233a433d87eb20b6ce45b49b.mp3",
+ "clip": "ADK-vue-09-ToolBased",
+ "at": "evidence"
+}

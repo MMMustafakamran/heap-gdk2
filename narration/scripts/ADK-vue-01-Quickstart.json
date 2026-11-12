@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-01-Quickstart",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the quickstart page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. So after sending a message, the chat replies, but only because I wired it up myself."
+  },
+  {
+   "at": "evidence",
+   "text": "Ok so, the page here is just the ADK landing page, with a setup prompt wizard."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And down here it is just this start building wizard, umm, no actual steps."
+  },
+  {
+   "at": "notepad",
+   "text": "So there is no Vue quickstart to follow at all. No npm create vue, no CopilotKit Vue install, no runtime and no ADK agent. I had to wire the Vue app to an ADK backend myself."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, this is the issue, kindly fix it."
+  }
+ ]
+}

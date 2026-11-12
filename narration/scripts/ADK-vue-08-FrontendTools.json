@@ -1,0 +1,29 @@
+{
+ "clip": "ADK-vue-08-FrontendTools",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the frontend tools page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to show only sev one incidents, and the agent just answered in text. The filter stayed on all."
+  },
+  {
+   "at": "evidence",
+   "text": "So the page says the agent can call the tool, and the frontend runs it."
+  },
+  {
+   "at": "notepad",
+   "text": "But the page only shows the Vue side. With a normal ADK agent the tool never reaches the model, because the agent needs the AGUI toolset, and, uh, this page never says that. With it added, it works."
+  },
+  {
+   "at": "+",
+   "text": "So kindly look into it."
+  }
+ ]
+}

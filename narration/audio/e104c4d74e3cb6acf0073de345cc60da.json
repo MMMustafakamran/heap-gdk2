@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. I asked it to write a short paragraph, and the supervisor answered, but there is nothing showing the delegations.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.545,
+ "file": "e104c4d74e3cb6acf0073de345cc60da.mp3",
+ "clip": "ADK-vue-22-SubAgents",
+ "at": "demo"
+}

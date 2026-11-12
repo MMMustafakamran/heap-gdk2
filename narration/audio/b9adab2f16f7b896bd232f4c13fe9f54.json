@@ -1,0 +1,9 @@
+{
+ "text": "But the agent never sees the context. The page shows no backend side for this, and even with the AGUI toolset the value never gets through.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 9.938,
+ "file": "b9adab2f16f7b896bd232f4c13fe9f54.mp3",
+ "clip": "ADK-vue-16-SharedStateReadonly",
+ "at": "notepad"
+}

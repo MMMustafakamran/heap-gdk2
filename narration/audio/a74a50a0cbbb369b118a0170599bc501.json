@@ -1,0 +1,9 @@
+{
+ "text": "Basically the snippet is only the LLM agent call. Set notes, inject preferences, the instruction and get model are never shown, and the file it mentions is not linked. So as written it is a name error, and I had to copy the showcase file to run it.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 15.743,
+ "file": "a74a50a0cbbb369b118a0170599bc501.mp3",
+ "clip": "ADK-vue-13-SharedState",
+ "at": "notepad"
+}

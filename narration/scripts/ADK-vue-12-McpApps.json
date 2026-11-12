@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-12-McpApps",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the MCP apps page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to draw a flowchart, the chat showed a timed out error, and then the agent said it drew it, but no app showed up."
+  },
+  {
+   "at": "evidence",
+   "text": "So the runtime here registers an agent that is never defined."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And the MCP server URL is just a placeholder, example dot com."
+  },
+  {
+   "at": "notepad",
+   "text": "I filled both in, with the Excalidraw MCP server. But the chat shows a timed out error, and the app frame never shows up."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, kindly check this and fix it."
+  }
+ ]
+}

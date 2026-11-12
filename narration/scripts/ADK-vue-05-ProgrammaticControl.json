@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-05-ProgrammaticControl",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the programmatic control page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. After clicking run agent, the run went through, but nothing on the page shows what the agent did."
+  },
+  {
+   "at": "evidence",
+   "text": "So the agent here imports agents dot shared chat."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And the frontend uses an agent called sales."
+  },
+  {
+   "at": "notepad",
+   "text": "Shared chat is not on the page or linked, so the server does not start. And nothing registers the sales agent. With a stand in file the run button works, but, uh, nothing shows the reply."
+  },
+  {
+   "at": "+",
+   "text": "So umm, this one needs fixing, please look into it."
+  }
+ ]
+}

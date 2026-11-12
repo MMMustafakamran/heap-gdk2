@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. I asked for the Paris weather card, and the agent just typed a text card. The weather card component never rendered.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 9.102,
+ "file": "8e59d21249796b6360d3b3d1c32b3dcd.mp3",
+ "clip": "ADK-vue-09-ToolBased",
+ "at": "demo"
+}

@@ -1,0 +1,911 @@
+{
+ "framework": "Google ADK",
+ "ui": "vue",
+ "repo": "GoogleADK-Vue",
+ "docBase": "https://docs.copilotkit.ai/vue/google-adk/",
+ "versions": {
+  "@copilotkit/vue": "1.85.0",
+  "@copilotkit/runtime": "1.85.0",
+  "vue": "3.5.45",
+  "vite": "8.3.6",
+  "tsx": "4.23.15",
+  "ag-ui-adk": "0.12.0",
+  "google-adk": "2.14.0"
+ },
+ "testedContext": {
+  "os": "Microsoft Windows 11 Pro",
+  "packageManager": "npm 12 (Node 26.7.0)"
+ },
+ "report": {
+  "style": "team",
+  "h1": "Google ADK",
+  "title": "Google ADK testing",
+  "quickstartHeading": "Quickstarts",
+  "quickstartHeader": null,
+  "clipsToUpload": true,
+  "guidesHeading": "Vue Guides",
+  "columns": [
+   "Page/Section",
+   "Google ADK"
+  ],
+  "resultColumn": 1
+ },
+ "sections": [
+  {
+   "label": "Basics",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Chat",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Custom Look and Feel",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Chat​",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Threads",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Basics​",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Generative UI",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Controlled",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Open-ended",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Interactivity",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Shared state",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Human-in-the-loop",
+   "cells": [
+    "Sub section"
+   ]
+  },
+  {
+   "label": "Interactivity​",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Agent capabilities",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Backend",
+   "cells": [
+    "Section"
+   ]
+  },
+  {
+   "label": "Debugging",
+   "cells": [
+    "Sub section"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "id": "quickstart",
+   "label": "Vue",
+   "kind": "quickstart",
+   "group": null,
+   "child": false,
+   "docPath": "",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    1
+   ],
+   "notes": [
+    "Issue: the Vue quickstart link shows the ADK landing page; no Vue steps, no runtime and no ADK agent wiring."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-01-Quickstart",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-01-Quickstart.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "prebuilt-components",
+   "label": "Prebuilt Components",
+   "kind": "guide",
+   "group": "Chat",
+   "child": true,
+   "docPath": "prebuilt-components",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [
+    10,
+    11
+   ],
+   "notes": [
+    "Note: uses agent-id my-agent, which nothing registers."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-02-PrebuiltComponents",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "slots",
+   "label": "Slots (Subcomponents)",
+   "kind": "guide",
+   "group": "Custom Look and Feel",
+   "child": true,
+   "docPath": "custom-look-and-feel/slots",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [],
+   "notes": [],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-03-Slots",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "headless-ui",
+   "label": "Fully Headless UI",
+   "kind": "guide",
+   "group": "Custom Look and Feel",
+   "child": true,
+   "docPath": "custom-look-and-feel/headless-ui",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [
+    11
+   ],
+   "notes": [],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-04-HeadlessUi",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "programmatic-control",
+   "label": "Programmatic Control",
+   "kind": "guide",
+   "group": "Chat​",
+   "child": true,
+   "docPath": "programmatic-control",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    5
+   ],
+   "notes": [
+    "Issue: the agent imports agents.shared_chat, never shown or linked, so the backend won’t start; frontend uses agent sales, never registered."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-05-ProgrammaticControl",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-05-ProgrammaticControl.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "threads-drawer",
+   "label": "Threads Drawer",
+   "kind": "guide",
+   "group": "Threads",
+   "child": true,
+   "docPath": "prebuilt-components/copilot-threads-drawer",
+   "reachable": "sidebar",
+   "status": "pending",
+   "findings": [
+    11
+   ],
+   "notes": [],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-06-ThreadsDrawer",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "headless-threads",
+   "label": "Headless Threads",
+   "kind": "guide",
+   "group": "Threads",
+   "child": true,
+   "docPath": "headless-threads",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [
+    11,
+    13
+   ],
+   "notes": [
+    "Note: server.ts uses agent and verifyAppSession without defining them."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-07-HeadlessThreads",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "frontend-tools",
+   "label": "Frontend Tools",
+   "kind": "guide",
+   "group": "Basics​",
+   "child": false,
+   "docPath": "frontend-tools",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    2
+   ],
+   "notes": [
+    "Issue: no agent-side step; an ADK agent without AGUIToolset() never gets the tool, so the filter never changes."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-08-FrontendTools",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-08-FrontendTools.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "tool-based",
+   "label": "Components as Tools",
+   "kind": "guide",
+   "group": "Controlled",
+   "child": true,
+   "docPath": "generative-ui/tool-based",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    2
+   ],
+   "notes": [
+    "Issue: no agent-side step; without AGUIToolset() the agent types a text card and WeatherCard never renders."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-09-ToolBased",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-09-ToolBased.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "tool-rendering",
+   "label": "Tool Rendering",
+   "kind": "guide",
+   "group": "Controlled",
+   "child": true,
+   "docPath": "generative-ui/tool-rendering",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [
+    12
+   ],
+   "notes": [
+    "Note: only get_weather is shown, no agent; the card reads city but the tool arg is location."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-10-ToolRendering",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "state-rendering",
+   "label": "State Rendering",
+   "kind": "guide",
+   "group": "Controlled",
+   "child": true,
+   "docPath": "generative-ui/state-rendering",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    3
+   ],
+   "notes": [
+    "Issue: the UI reads status/draft/completed/total but the agent only writes document, so the panel stays Idle."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-11-StateRendering",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-11-StateRendering.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "mcp-apps",
+   "label": "MCP Apps",
+   "kind": "guide",
+   "group": "Open-ended",
+   "child": true,
+   "docPath": "generative-ui/mcp-apps",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    7
+   ],
+   "notes": [
+    "Issue: runtime snippet uses an undefined agent and a placeholder MCP url; filled in, the chat times out and no app frame shows."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-12-McpApps",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-12-McpApps.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "shared-state",
+   "label": "Shared State",
+   "kind": "guide",
+   "group": "Shared state",
+   "child": true,
+   "docPath": "shared-state",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    4
+   ],
+   "notes": [
+    "Issue: the agent snippet uses set_notes, _inject_preferences, _INSTRUCTION and get_model, none shown or linked."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-13-SharedState",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-13-SharedState.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "shared-state-rendering",
+   "label": "Render agent state in your app",
+   "kind": "guide",
+   "group": "Shared state",
+   "child": true,
+   "docPath": "shared-state/rendering-in-app",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [],
+   "notes": [],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-14-SharedStateRendering",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "shared-state-streaming",
+   "label": "State Streaming",
+   "kind": "guide",
+   "group": "Shared state",
+   "child": true,
+   "docPath": "shared-state/streaming",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [
+    14
+   ],
+   "notes": [
+    "Note: shared_chat.py from the linked showcase needs agents._header_forwarding removed."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-15-SharedStateStreaming",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "shared-state-readonly",
+   "label": "Agent Read-Only Context",
+   "kind": "guide",
+   "group": "Shared state",
+   "child": true,
+   "docPath": "shared-state/agent-readonly",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    6
+   ],
+   "notes": [
+    "Issue: the agent never sees the useAgentContext value (asked which workspace, it says it can’t see it)."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-16-SharedStateReadonly",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-16-SharedStateReadonly.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "hitl",
+   "label": "Human in the Loop",
+   "kind": "guide",
+   "group": "Human-in-the-loop",
+   "child": true,
+   "docPath": "human-in-the-loop",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    5
+   ],
+   "notes": [
+    "Issue: the agent imports agents.shared_chat, never shown or linked; TimePickerCard.vue is never shown either."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-17-HumanInTheLoop",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-17-HumanInTheLoop.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "use-interrupt",
+   "label": "useInterrupt",
+   "kind": "guide",
+   "group": "Human-in-the-loop",
+   "child": true,
+   "docPath": "human-in-the-loop/useInterrupt",
+   "reachable": "sidebar",
+   "status": "N/A",
+   "findings": [],
+   "notes": [
+    "Note: the page says it is not available on this framework (Google ADK)."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "headless-interrupts",
+   "label": "Headless Interrupts",
+   "kind": "guide",
+   "group": "Human-in-the-loop",
+   "child": true,
+   "docPath": "human-in-the-loop/headless",
+   "reachable": "sidebar",
+   "status": "N/A",
+   "findings": [],
+   "notes": [
+    "Note: the page says it is not available on this framework (Google ADK)."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "governed-actions",
+   "label": "Governed Actions",
+   "kind": "guide",
+   "group": "Human-in-the-loop",
+   "child": true,
+   "docPath": "human-in-the-loop/governed-actions",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    2
+   ],
+   "notes": [
+    "Issue: no agent shown; a plain ADK agent never gets the tool and no approval card appears."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-20-GovernedActions",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-20-GovernedActions.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "webmcp",
+   "label": "WebMCP",
+   "kind": "guide",
+   "group": "Interactivity​",
+   "child": false,
+   "docPath": "webmcp",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    8
+   ],
+   "notes": [
+    "Issue: OrderSearch.vue calls searchOrders(), never defined, and the agent never replies."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-21-WebMcp",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-21-WebMcp.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "subagents",
+   "label": "Sub-Agents",
+   "kind": "guide",
+   "group": "Agent capabilities",
+   "child": false,
+   "docPath": "multi-agent/subagents",
+   "reachable": "sidebar",
+   "status": "❌",
+   "findings": [
+    5,
+    9
+   ],
+   "notes": [
+    "Issue: the delegation-log section has no code, and the agent imports agents.shared_chat, never shown or linked."
+   ],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-22-SubAgents",
+     "loom": null,
+     "narration": "narration/scripts/ADK-vue-22-SubAgents.json"
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "inspector",
+   "label": "Inspector",
+   "kind": "guide",
+   "group": "Debugging",
+   "child": true,
+   "docPath": "inspector",
+   "reachable": "sidebar",
+   "status": "✅",
+   "findings": [],
+   "notes": [],
+   "block": null,
+   "links": [
+    {
+     "text": null,
+     "clip": "ADK-vue-23-Inspector",
+     "loom": null,
+     "narration": null
+    }
+   ],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "agent-config",
+   "label": "Agent configuration",
+   "kind": "guide",
+   "group": null,
+   "child": false,
+   "docPath": "agent-config",
+   "reachable": "in-content",
+   "linkedFrom": "inspector",
+   "status": "pending",
+   "excluded": true,
+   "findings": [],
+   "notes": [
+    "Note: in-content link from the Inspector page; not tested yet."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "generative-ui-components",
+   "label": "Components and surfaces",
+   "kind": "guide",
+   "group": null,
+   "child": false,
+   "docPath": "generative-ui/components",
+   "reachable": "in-content",
+   "linkedFrom": "inspector",
+   "status": "pending",
+   "excluded": true,
+   "findings": [],
+   "notes": [
+    "Note: in-content link from the Inspector page; not tested yet."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "vs-code-extension",
+   "label": "VS Code Extension",
+   "kind": "guide",
+   "group": null,
+   "child": false,
+   "docPath": "vs-code-extension",
+   "reachable": "in-content",
+   "linkedFrom": "inspector",
+   "status": "pending",
+   "excluded": true,
+   "findings": [],
+   "notes": [
+    "Note: in-content link from the Inspector page; not tested yet."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  },
+  {
+   "id": "troubleshooting-error-debugging",
+   "label": "Error debugging",
+   "kind": "guide",
+   "group": null,
+   "child": false,
+   "docPath": "troubleshooting/error-debugging",
+   "reachable": "in-content",
+   "linkedFrom": "inspector",
+   "status": "pending",
+   "excluded": true,
+   "findings": [],
+   "notes": [
+    "Note: in-content link from the Inspector page; not tested yet."
+   ],
+   "block": null,
+   "links": [],
+   "review": {
+    "verdict": null,
+    "approvedAt": null,
+    "by": null
+   },
+   "added": "2026-11-12"
+  }
+ ]
+}

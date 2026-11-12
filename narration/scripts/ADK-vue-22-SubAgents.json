@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-22-SubAgents",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the sub agents page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to write a short paragraph, and the supervisor answered, but there is nothing showing the delegations."
+  },
+  {
+   "at": "evidence",
+   "text": "So the delegation log section here says the frontend renders it, but there is no code at all."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And the agent imports agents dot shared chat, uh, which is not shown or linked."
+  },
+  {
+   "at": "notepad",
+   "text": "So the backend does not start as written. With a stand in file it answers, but there is no delegation log to see, because the page never shows how to build it."
+  },
+  {
+   "at": "+",
+   "text": "Okay, so that is what is missing here, please fix it."
+  }
+ ]
+}

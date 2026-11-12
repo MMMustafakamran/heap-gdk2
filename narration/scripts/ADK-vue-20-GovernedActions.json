@@ -1,0 +1,29 @@
+{
+ "clip": "ADK-vue-20-GovernedActions",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the governed action approval page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to call the approval tool, and it said it has no tools. No approval card showed up."
+  },
+  {
+   "at": "evidence",
+   "text": "So the page says the agent proposes the action, and the UI renders the checkpoint."
+  },
+  {
+   "at": "notepad",
+   "text": "But the page shows no agent at all. A plain ADK agent never gets the frontend tool, so there is no approval card. Same missing AGUI toolset step here."
+  },
+  {
+   "at": "+",
+   "text": "So this needs a fix, kindly check it."
+  }
+ ]
+}

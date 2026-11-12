@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-17-HumanInTheLoop",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the human in the loop overview page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. After asking it to book a call, the time picker showed up, but only with the files I had to add myself."
+  },
+  {
+   "at": "evidence",
+   "text": "So the agent imports get model and stop on terminal text from agents dot shared chat."
+  },
+  {
+   "at": "evidence#2",
+   "text": "And the component imports a time picker card, umm, which is never shown."
+  },
+  {
+   "at": "notepad",
+   "text": "That shared chat file is not on the page or linked, so the backend does not even start, module not found. The time picker card is missing too. I only got the picker with a stand in file and a picker I wrote myself."
+  },
+  {
+   "at": "+",
+   "text": "That is what is breaking here, kindly have it fixed."
+  }
+ ]
+}

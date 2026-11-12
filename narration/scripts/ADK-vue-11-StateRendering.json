@@ -1,0 +1,33 @@
+{
+ "clip": "ADK-vue-11-StateRendering",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the state rendering page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to research the bicycle and write a draft. The agent says it is in the document view, but the panel just stays on idle."
+  },
+  {
+   "at": "evidence",
+   "text": "So the component here reads status, draft, completed and total from the state."
+  },
+  {
+   "at": "evidence#2",
+   "text": "But the agent on the page, uh, only writes document into the state."
+  },
+  {
+   "at": "notepad",
+   "text": "So the UI and the agent never match up. The agent writes the document, but the panel waits for other keys, so it stays on idle."
+  },
+  {
+   "at": "+",
+   "text": "That is it for this one, kindly look into this issue."
+  }
+ ]
+}

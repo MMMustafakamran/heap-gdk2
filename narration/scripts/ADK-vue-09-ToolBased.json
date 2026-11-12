@@ -1,0 +1,29 @@
+{
+ "clip": "ADK-vue-09-ToolBased",
+ "segments": [
+  {
+   "at": "doc",
+   "text": "Ok so, this is the components as tools page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
+  },
+  {
+   "at": "ide",
+   "text": "So this is my project, umm, and this is the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked for the Paris weather card, and the agent just typed a text card. The weather card component never rendered."
+  },
+  {
+   "at": "evidence",
+   "text": "So here it says when the agent calls the tool, the component renders in the chat."
+  },
+  {
+   "at": "notepad",
+   "text": "But there is no agent side on this page. A plain ADK agent never gets the component as a tool, so it just types a text card. Umm, with the AGUI toolset on the agent, the card shows up."
+  },
+  {
+   "at": "+",
+   "text": "That is the problem here, please have a look."
+  }
+ ]
+}

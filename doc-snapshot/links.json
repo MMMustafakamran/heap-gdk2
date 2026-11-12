@@ -1,0 +1,227 @@
+{
+ "root": "vue/google-adk",
+ "savedAt": "2026-11-12",
+ "pages": {
+  "/vue/google-adk/prebuilt-components": [
+   "/vue/google-adk/vue/prebuilt-components/chat",
+   "/vue/google-adk/vue/prebuilt-components/chat-controls",
+   "/vue/google-adk/vue/prebuilt-components/popup",
+   "/vue/google-adk/vue/prebuilt-components/sidebar"
+  ],
+  "/vue/google-adk/using-these-docs": [],
+  "/vue/google-adk": [
+   "/vue/google-adk/backend/copilot-runtime",
+   "/vue/google-adk/inspector",
+   "/vue/google-adk/model-selection",
+   "/vue/google-adk/vue/AG-UI-Streams",
+   "/vue/google-adk/vue/generative-ui/tool-based",
+   "/vue/google-adk/vue/prebuilt-components/copilot-threads-drawer"
+  ],
+  "/vue/google-adk/custom-look-and-feel/slots": [],
+  "/vue/google-adk/build-with-agents": [],
+  "/vue/google-adk/custom-look-and-feel/headless-ui": [
+   "/vue/google-adk/vue/custom-look-and-feel/css",
+   "/vue/google-adk/vue/custom-look-and-feel/slots"
+  ],
+  "/vue/google-adk/programmatic-control": [
+   "/vue/google-adk/human-in-the-loop",
+   "/vue/google-adk/vue/custom-look-and-feel/headless-ui"
+  ],
+  "/vue/google-adk/prebuilt-components/copilot-threads-drawer": [
+   "/vue/google-adk/vue/AG-UI-Streams",
+   "/vue/google-adk/vue/headless-threads",
+   "/vue/google-adk/vue/threads-lifecycle"
+  ],
+  "/vue/google-adk/frontend-tools": [],
+  "/vue/google-adk/headless-threads": [
+   "/vue/google-adk/intelligence/self-hosting",
+   "/vue/google-adk/intelligence/threads-explained",
+   "/vue/google-adk/threads-import",
+   "/vue/google-adk/vue/prebuilt-components/copilot-threads-drawer",
+   "/vue/google-adk/vue/threads-lifecycle"
+  ],
+  "/vue/google-adk/generative-ui/tool-based": [
+   "/vue/google-adk/vue/generative-ui/tool-rendering",
+   "/vue/google-adk/vue/human-in-the-loop"
+  ],
+  "/vue/google-adk/generative-ui/state-rendering": [],
+  "/vue/google-adk/generative-ui/mcp-apps": [],
+  "/vue/google-adk/shared-state": [
+   "/vue/google-adk/vue/shared-state/agent-readonly",
+   "/vue/google-adk/vue/shared-state/rendering-in-app",
+   "/vue/google-adk/vue/shared-state/streaming"
+  ],
+  "/vue/google-adk/generative-ui/tool-rendering": [],
+  "/vue/google-adk/shared-state/rendering-in-app": [
+   "/vue/google-adk/vue/shared-state",
+   "/vue/google-adk/vue/shared-state/agent-readonly",
+   "/vue/google-adk/vue/shared-state/streaming"
+  ],
+  "/vue/google-adk/shared-state/streaming": [
+   "/vue/google-adk/vue/shared-state",
+   "/vue/google-adk/vue/shared-state/agent-readonly"
+  ],
+  "/vue/google-adk/shared-state/agent-readonly": [
+   "/vue/google-adk/vue/shared-state",
+   "/vue/google-adk/vue/shared-state/streaming"
+  ],
+  "/vue/google-adk/human-in-the-loop": [
+   "/vue/google-adk/vue/human-in-the-loop/headless",
+   "/vue/google-adk/vue/human-in-the-loop/useInterrupt"
+  ],
+  "/vue/google-adk/human-in-the-loop/useInterrupt": [
+   "/vue/google-adk/human-in-the-loop",
+   "/vue/google-adk/human-in-the-loop/headless"
+  ],
+  "/vue/google-adk/human-in-the-loop/headless": [
+   "/vue/google-adk/human-in-the-loop",
+   "/vue/google-adk/human-in-the-loop/useInterrupt"
+  ],
+  "/vue/google-adk/human-in-the-loop/governed-actions": [
+   "/vue/google-adk/frontend-tools",
+   "/vue/google-adk/human-in-the-loop",
+   "/vue/google-adk/human-in-the-loop/useInterrupt"
+  ],
+  "/vue/google-adk/webmcp": [
+   "/vue/google-adk/frontend-tools"
+  ],
+  "/vue/google-adk/multi-agent/subagents": [
+   "/vue/google-adk/shared-state",
+   "/vue/google-adk/shared-state/streaming"
+  ],
+  "/vue/google-adk/threads-import": [
+   "/vue/google-adk/headless-threads",
+   "/vue/google-adk/intelligence/quickstart",
+   "/vue/google-adk/intelligence/threads-explained",
+   "/vue/google-adk/prebuilt-components/copilot-threads-drawer"
+  ],
+  "/vue/google-adk/threads-lifecycle": [
+   "/vue/google-adk/auth",
+   "/vue/google-adk/intelligence/threads-explained",
+   "/vue/google-adk/threads-import",
+   "/vue/google-adk/vue/headless-threads"
+  ],
+  "/vue/google-adk/learning": [
+   "/vue/google-adk/AG-UI-Streams",
+   "/vue/google-adk/cli",
+   "/vue/google-adk/inspector",
+   "/vue/google-adk/intelligence/capture-interactions",
+   "/vue/google-adk/intelligence/learned-skills",
+   "/vue/google-adk/intelligence/memories",
+   "/vue/google-adk/intelligence/overview",
+   "/vue/google-adk/intelligence/quickstart",
+   "/vue/google-adk/intelligence/threads-explained"
+  ],
+  "/vue/google-adk/AG-UI-Streams": [
+   "/vue/google-adk/headless-threads",
+   "/vue/google-adk/inspector",
+   "/vue/google-adk/intelligence/bring-your-own-thread-system",
+   "/vue/google-adk/intelligence/managed-intelligence-platform",
+   "/vue/google-adk/intelligence/quickstart",
+   "/vue/google-adk/intelligence/self-hosting",
+   "/vue/google-adk/intelligence/threads-explained",
+   "/vue/google-adk/prebuilt-components/copilot-threads-drawer",
+   "/vue/google-adk/threads-import",
+   "/vue/google-adk/threads-lifecycle"
+  ],
+  "/vue/google-adk/runtime-server-adapter": [
+   "/vue/google-adk/intelligence/quickstart"
+  ],
+  "/vue/google-adk/concepts/architecture": [
+   "/vue/google-adk/agentic-protocols/ag-ui",
+   "/vue/google-adk/intelligence/overview",
+   "/vue/google-adk/quickstart"
+  ],
+  "/vue/google-adk/inspector": [
+   "/vue/google-adk/AG-UI-Streams",
+   "/vue/google-adk/agent-config",
+   "/vue/google-adk/agentic-protocols/ag-ui",
+   "/vue/google-adk/backend/copilot-runtime",
+   "/vue/google-adk/backend/runtime-endpoints",
+   "/vue/google-adk/frontend-tools",
+   "/vue/google-adk/generative-ui/components",
+   "/vue/google-adk/headless-threads",
+   "/vue/google-adk/intelligence/overview",
+   "/vue/google-adk/intelligence/quickstart",
+   "/vue/google-adk/learning",
+   "/vue/google-adk/quickstart",
+   "/vue/google-adk/react-native",
+   "/vue/google-adk/shared-state",
+   "/vue/google-adk/shared-state/agent-readonly",
+   "/vue/google-adk/troubleshooting/debug-mode",
+   "/vue/google-adk/troubleshooting/error-debugging",
+   "/vue/google-adk/vs-code-extension"
+  ],
+  "/vue/google-adk/concepts/generative-ui-overview": [
+   "/vue/google-adk/generative-ui/a2ui",
+   "/vue/google-adk/generative-ui/a2ui/dynamic-schema",
+   "/vue/google-adk/generative-ui/a2ui/fixed-schema",
+   "/vue/google-adk/generative-ui/mcp-apps",
+   "/vue/google-adk/generative-ui/reasoning",
+   "/vue/google-adk/generative-ui/state-rendering",
+   "/vue/google-adk/generative-ui/tool-based",
+   "/vue/google-adk/generative-ui/tool-rendering"
+  ],
+  "/vue/google-adk/concepts/which-hook": [
+   "/vue/google-adk/vue/custom-look-and-feel/slots",
+   "/vue/google-adk/vue/frontend-tools",
+   "/vue/google-adk/vue/generative-ui/tool-based",
+   "/vue/google-adk/vue/generative-ui/tool-rendering",
+   "/vue/google-adk/vue/human-in-the-loop"
+  ],
+  "/vue/google-adk/concepts/oss-vs-enterprise": [
+   "/vue/google-adk/AG-UI-Streams",
+   "/vue/google-adk/backend/copilot-runtime",
+   "/vue/google-adk/inspector",
+   "/vue/google-adk/intelligence/analytics",
+   "/vue/google-adk/intelligence/channels",
+   "/vue/google-adk/intelligence/intelligence-platform",
+   "/vue/google-adk/intelligence/learned-skills",
+   "/vue/google-adk/intelligence/managed-intelligence-platform",
+   "/vue/google-adk/intelligence/memories",
+   "/vue/google-adk/intelligence/overview",
+   "/vue/google-adk/intelligence/self-hosting",
+   "/vue/google-adk/intelligence/self-hosting-ecs",
+   "/vue/google-adk/learning",
+   "/vue/google-adk/quickstart"
+  ],
+  "/vue/google-adk/agentic-protocols": [
+   "/vue/google-adk/generative-ui/a2ui",
+   "/vue/google-adk/generative-ui/mcp-apps"
+  ],
+  "/vue/google-adk/agentic-protocols/ag-ui": [],
+  "/vue/google-adk/agentic-protocols/ag-ui-middleware": [
+   "/vue/google-adk/agentic-protocols/ag-ui",
+   "/vue/google-adk/backend/ag-ui",
+   "/vue/google-adk/backend/copilot-runtime"
+  ],
+  "/vue/google-adk/agentic-protocols/mcp": [
+   "/vue/google-adk/agentic-protocols",
+   "/vue/google-adk/backend/copilot-runtime",
+   "/vue/google-adk/generative-ui/mcp-apps",
+   "/vue/google-adk/generative-ui/tool-rendering",
+   "/vue/google-adk/human-in-the-loop"
+  ],
+  "/vue/google-adk/agentic-protocols/a2a": [
+   "/vue/google-adk/agentic-protocols"
+  ],
+  "/vue/google-adk/troubleshooting/common-issues": [
+   "/vue/google-adk/backend/agent-runner",
+   "/vue/google-adk/backend/runtime-endpoints",
+   "/vue/google-adk/deploy/agentcore",
+   "/vue/google-adk/intelligence/self-hosting",
+   "/vue/google-adk/model-selection",
+   "/vue/google-adk/quickstart",
+   "/vue/google-adk/troubleshooting/error-debugging",
+   "/vue/google-adk/troubleshooting/error-reference"
+  ],
+  "/vue/google-adk/troubleshooting/debug-mode": [
+   "/vue/google-adk/troubleshooting/error-debugging"
+  ],
+  "/vue/google-adk/troubleshooting/event-inspector": [
+   "/vue/google-adk/inspector",
+   "/vue/google-adk/vs-code-extension"
+  ],
+  "/vue/google-adk/community-frameworks": []
+ }
+}

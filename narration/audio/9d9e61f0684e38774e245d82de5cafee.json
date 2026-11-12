@@ -1,0 +1,9 @@
+{
+ "text": "But there is no agent side on this page. A plain ADK agent never gets the component as a tool, so it just types a text card. Umm, with the AGUI toolset on the agent, the card shows up.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 12.91,
+ "file": "9d9e61f0684e38774e245d82de5cafee.mp3",
+ "clip": "ADK-vue-09-ToolBased",
+ "at": "notepad"
+}
