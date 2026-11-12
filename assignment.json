@@ -287,11 +287,13 @@
    "child": true,
    "docPath": "prebuilt-components/copilot-threads-drawer",
    "reachable": "sidebar",
-   "status": "pending",
+   "status": "✅",
    "findings": [
     11
    ],
-   "notes": [],
+   "notes": [
+    "Note: uses agent-id support, which nothing registers."
+   ],
    "block": null,
    "links": [
     {
