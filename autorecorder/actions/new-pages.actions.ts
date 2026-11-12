@@ -308,19 +308,36 @@ export const runHeadlessThreadsAction: PageActionHandler = async (page, config, 
   }
   await sleep(4000); // the thread name fills in
   const userBubble = page.getByText(config.prompt, { exact: false }).first();
-  const other = rows.filter({ hasNotText: promptHead(config) });
-  if ((await other.count()) > 0) {
+  // HARNESS (recorder): Intelligence keeps a user's threads across takes and every take sends the same prompt, so
+  // older rows carry the same generated name ("Exploring tide pools"). Filtering rows by name picked the current
+  // thread itself (CI run 43212255785). The list is newest first: switch to the last (oldest) row and check that the
+  // chat content changes (the old thread has the same prompt, so the prompt bubble stays).
+  const chatText = () =>
+    page.evaluate(() => {
+      const clone = document.body.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('ul').forEach((u) => { if (u.querySelector('li > button')) u.remove(); });
+      return clone.innerText.replace(/\s+/g, ' ').trim();
+    });
+  const waitText = async (want: (t: string) => boolean) => {
+    for (let i = 0; i < 40; i++) {
+      if (want(await chatText())) return true;
+      await sleep(500);
+    }
+    return false;
+  };
+  const before = await chatText();
+  const count = await rows.count();
+  if (count > 1) {
     mark('click', 'other thread');
-    await glideClick(page, other.first());
-    const switched = await userBubble.waitFor({ state: 'hidden', timeout: 20000 }).then(() => true).catch(() => false);
+    await glideClick(page, rows.nth(count - 1));
+    const switched = await waitText((t) => t !== before);
     void checkpoint('switch', 'selecting another thread switches the chat away from this one', async () => switched);
     if (!switched) ctx.fail('Selecting another thread did not switch the chat.');
     await sleep(3000);
   }
   mark('click', 'reopen thread');
-  const mine = rows.filter({ hasText: promptHead(config) });
-  await glideClick(page, (await mine.count()) > 0 ? mine.first() : rows.first());
-  const replayed = await userBubble.waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false);
+  await glideClick(page, rows.first()); // newest first: the thread this take created
+  const replayed = (await waitText((t) => t === before)) && (await userBubble.isVisible());
   void checkpoint('replay', 'selecting the thread replays its history', () => probeText(page.getByText(config.prompt, { exact: false })));
   if (!replayed) ctx.fail('Selecting the thread did not replay its conversation.');
   await sleep(4000);
