@@ -18,6 +18,9 @@ PY_ONLY = 'The code is written only in Python.'
 warnings = []
 
 
+FRESH_ONLY = None  # report date (YYYY-MM-DD) when --fresh-only is given
+
+
 def esc(s):
     return html.escape(s.replace('`', ''))   # notes may carry `code` marks; the doc gets plain text
 
@@ -82,6 +85,11 @@ def cell(a, p):
     # usable setup), every other page is blocked for a reader: the row is ❌ "Blocked", and what the page did
     # on a hand-built setup follows as secondary info. assignment.json top level: "quickstartBlocked": "<reason>".
     qb = a.get('quickstartBlocked')
+    if qb and FRESH_ONLY and p.get('kind', 'guide') == 'guide' and p['status'] in ('✅', '⚠️', '❌'):
+        # --fresh-only (owner, 2026-11-16): a blocked page not filmed on the report date shows no old clip and no
+        # old "tested anyway" result, only that it is blocked and was not retested.
+        if not any(isinstance(l, dict) and l.get('filmed') == FRESH_ONLY for l in p.get('links', [])):
+            return '<br>'.join(['❌', esc('Blocked: ' + qb)])
     if qb and p.get('kind', 'guide') == 'guide' and p['status'] in ('✅', '⚠️', '❌') and c:
         tested = {'✅': 'works', '⚠️': 'works with a minor issue', '❌': 'also fails on its own'}[p['status']]
         if c.startswith(p['status'] + '<br>'):
@@ -174,7 +182,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('assignments', nargs='+')
     ap.add_argument('--out', required=True)
+    ap.add_argument('--fresh-only', metavar='DATE', help='blocked-quickstart guide rows not filmed on DATE: no clip, "not retested"')
     args = ap.parse_args()
+    global FRESH_ONLY
+    FRESH_ONLY = args.fresh_only
     assignments = [load(p) for p in args.assignments]
     errs = [e for p, a in zip(args.assignments, assignments) for e in validate(a, p)]
     if errs:

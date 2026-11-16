@@ -69,7 +69,7 @@ export interface PageDefinition {
   /** Repo-relative source file the simulated IDE shows. */
   ideFile: string;
   /** Error clips: exact text of a line in `ideFile` the tester added because the doc page did not give it (see IdeTabConfig.addedText). */
-  ideAddedText?: string;
+  ideAddedText?: string | string[];
 
   /** Inclusive highlight range in `ideFile`. Guarded by `npm run doctor`. */
   startLine: number;

@@ -764,17 +764,21 @@ export class RecordingEngine {
       // Error clips: point at the line the tester added because the doc page
       // did not give it. Found by its exact text, so a moved line never
       // selects the wrong one; not found -> warn and skip (the take still films).
-      const bad = tabs[idx].addedText;
-      if (bad) {
+      // One entry per added line (owner rule): a string or a list of strings.
+      const added = tabs[idx].addedText;
+      const wanted = added == null ? [] : Array.isArray(added) ? added : [added];
+      if (wanted.length) {
         const full = join(this.rootDir, tabs[idx].filePath);
         const lines = existsSync(full) ? readFileSync(full, 'utf-8').split(/\r?\n/) : [];
-        const n = lines.findIndex((l) => l.includes(bad)) + 1;
-        if (n > 0) {
-          await humanScrollCodeViewport(page, n, idx);
-          await this.dragSelectSnippet(page, idx, n, n);
-          await pause(between(1800, 2400));
-        } else {
-          console.warn(`   ⚠️  addedText not found in ${tabs[idx].filePath}: ${bad}`);
+        for (const bad of wanted) {
+          const n = lines.findIndex((l) => l.includes(bad)) + 1;
+          if (n > 0) {
+            await humanScrollCodeViewport(page, n, idx);
+            await this.dragSelectSnippet(page, idx, n, n);
+            await pause(between(1800, 2400));
+          } else {
+            console.warn(`   ⚠️  addedText not found in ${tabs[idx].filePath}: ${bad}`);
+          }
         }
       }
     }

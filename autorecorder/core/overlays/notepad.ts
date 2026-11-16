@@ -64,7 +64,9 @@ export async function openNotepad(
         'background:#ffffff',
         'border-radius:8px',
         'box-shadow:0 18px 60px rgba(0,0,0,.42),0 0 0 1px rgba(0,0,0,.16)',
-        'z-index:2147483644',
+        // Top of the stack, like a real window over the browser: Next's build-error overlay (nextjs-portal,
+        // 2147483647) covered the note on ADK clips 27/32/38 (review 2026-11-16). The overlay stays under it.
+        'z-index:2147483647',
         'display:flex',
         'flex-direction:column',
         'overflow:hidden',
@@ -115,6 +117,11 @@ export async function openNotepad(
       win.appendChild(caretStyle);
 
       document.documentElement.appendChild(win);
+      // Equal z-index: the later element paints on top. Keep the window after any portal Next adds later.
+      const keepOnTop = window.setInterval(() => {
+        if (!win.isConnected) return window.clearInterval(keepOnTop);
+        if (document.documentElement.lastElementChild !== win) document.documentElement.appendChild(win);
+      }, 400);
       requestAnimationFrame(() => {
         win.style.opacity = '1';
         win.style.transform = 'translate(-50%,-50%) scale(1)';
