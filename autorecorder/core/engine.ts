@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, rmSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { executePageAction } from '../actions';
@@ -27,6 +27,7 @@ import { humanClick, humanGlide, humanScrollDown, restCursorSomewhere, sleep } f
 import { between, jitter, pause, seedTake } from './overlays/human';
 import { clickTaskbarApp, ensureOverlays, waitForHydration } from './overlays/taskbar';
 import { timeoutsFor } from './timeouts';
+import { docEvidenceFor, highlightDocEvidence, type DocEvidenceItem } from './doc-evidence';
 import { type ActionContext, type PageRecordConfig, type RecorderTimeouts } from './types';
 
 /**
@@ -628,6 +629,7 @@ export class RecordingEngine {
     docUrl: string,
     nextApp: 'vscode' | 'chrome' | 'terminal',
     timeouts: RecorderTimeouts,
+    evidence: DocEvidenceItem[] = [],
   ): Promise<string | null> {
     console.log(`\n📖 Step 1: Navigating to Official Doc (${docUrl})...`);
     try {
@@ -680,6 +682,10 @@ export class RecordingEngine {
       }
       // A beat on the selected snippet before switching apps.
       await pause(900);
+
+      // Error clips: the faulty doc text, drag-selected and held, one
+      // `evidence` mark each. No evidence (✅ pages) -> nothing. Never throws.
+      await highlightDocEvidence(page, evidence);
 
       console.log(`   🖱️ Switching to ${nextApp} via Windows 11 Taskbar...`);
       await clickTaskbarApp(page, nextApp);
@@ -755,6 +761,22 @@ export class RecordingEngine {
       // dwell rather than on top of it; the take stays the same length.
       await pause(Math.max(600, opts.dwellMs - dragMs));
 
+      // Error clips: point at the line the tester added because the doc page
+      // did not give it. Found by its exact text, so a moved line never
+      // selects the wrong one; not found -> warn and skip (the take still films).
+      const bad = tabs[idx].addedText;
+      if (bad) {
+        const full = join(this.rootDir, tabs[idx].filePath);
+        const lines = existsSync(full) ? readFileSync(full, 'utf-8').split(/\r?\n/) : [];
+        const n = lines.findIndex((l) => l.includes(bad)) + 1;
+        if (n > 0) {
+          await humanScrollCodeViewport(page, n, idx);
+          await this.dragSelectSnippet(page, idx, n, n);
+          await pause(between(1800, 2400));
+        } else {
+          console.warn(`   ⚠️  addedText not found in ${tabs[idx].filePath}: ${bad}`);
+        }
+      }
     }
 
     // Bounded, because unbounded it can hang the whole run. `unroute` waits for
@@ -947,6 +969,7 @@ export class RecordingEngine {
           req.docUrl,
           req.ideTabs?.length ? 'vscode' : 'terminal',
           timeouts,
+          docEvidenceFor(req.id),
         );
         if (note) warnings.push(note);
       }
@@ -1134,7 +1157,7 @@ export class RecordingEngine {
       }
 
       mark('doc');
-      const docNote = await this.showDocPage(page, config.docUrl, 'vscode', timeouts);
+      const docNote = await this.showDocPage(page, config.docUrl, 'vscode', timeouts, docEvidenceFor(config.id, config.findingEvidence));
       if (docNote) warnings.push(docNote);
 
       // ----------------------------------------------------
@@ -1149,7 +1172,7 @@ export class RecordingEngine {
         await this.showIde(
           page,
           [
-            { filePath: config.ideFile, startLine: config.startLine, endLine: config.endLine },
+            { filePath: config.ideFile, startLine: config.startLine, endLine: config.endLine, addedText: config.ideAddedText },
             ...(config.extraTabs ?? []),
           ],
           config.demoUrl,

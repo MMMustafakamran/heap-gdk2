@@ -3,27 +3,31 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the Vue quickstart page for Google ADK, and umm, I have implemented this page."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. So after sending a message, the chat replies, but only because I wired it up myself."
+   "text": "Ok so this is the Vue quickstart for Google ADK, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "Ok so, the page here is just the ADK landing page, with a setup prompt wizard."
+   "text": "So this is the problem, umm, the Vue quickstart link just shows the ADK landing page."
   },
   {
    "at": "evidence#2",
-   "text": "And down here it is just this start building wizard, umm, no actual steps."
+   "text": "And this is all there is, a prompt wizard, no install, runtime or agent steps."
+  },
+  {
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
+  },
+  {
+   "at": "+",
+   "text": "The whole runtime server and the agent wiring weren't on the page, so I wrote them myself."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. It should give me a working Vue app, but it only runs on the setup I built by hand."
   },
   {
    "at": "notepad",
-   "text": "So there is no Vue quickstart to follow at all. No npm create vue, no CopilotKit Vue install, no runtime and no ADK agent. I had to wire the Vue app to an ADK backend myself."
+   "text": "So basically there's no Vue quickstart to follow at all, so every other page has nothing to build on."
   },
   {
    "at": "+",

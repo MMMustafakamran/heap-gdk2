@@ -3,31 +3,31 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the state rendering page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. I asked it to research the bicycle and write a draft. The agent says it is in the document view, but the panel just stays on idle."
+   "text": "Ok so this is the State Rendering page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the component here reads status, draft, completed and total from the state."
+   "text": "So this is the problem, the UI reads status, draft, completed and total."
   },
   {
    "at": "evidence#2",
-   "text": "But the agent on the page, uh, only writes document into the state."
+   "text": "But the agent only ever writes document."
+  },
+  {
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to research the bicycle, the progress panel should update, but it stays on idle."
   },
   {
    "at": "notepad",
-   "text": "So the UI and the agent never match up. The agent writes the document, but the panel waits for other keys, so it stays on idle."
+   "text": "So the keys don't match, nothing the agent writes reaches the panel."
   },
   {
    "at": "+",
-   "text": "That is it for this one, kindly look into this issue."
+   "text": "That's it for this one, kindly look into this issue."
   }
  ]
 }

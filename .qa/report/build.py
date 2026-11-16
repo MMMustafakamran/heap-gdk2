@@ -86,8 +86,12 @@ def cell(a, p):
         tested = {'✅': 'works', '⚠️': 'works with a minor issue', '❌': 'also fails on its own'}[p['status']]
         if c.startswith(p['status'] + '<br>'):
             c = c[len(p['status']) + 4:]  # the row's emoji is ❌ now; the link and notes stay
+        elif c.split('<br>')[0] == esc(p['status'] + (' ' + STATUS_WORDS[p['status']] if p['status'] in STATUS_WORDS else '')):
+            c = '<br>'.join(c.split('<br>')[1:])  # status style, no clip: drop the bare 'emoji word' label
+        elif c == p['status']:
+            c = ''  # no clip and no note: only the (replaced) emoji was left
         c = '<br>'.join(['❌', esc('Blocked: ' + qb),
-                         esc(f'Tested anyway on a setup built by hand: the page {tested}.'), c])
+                         esc(f'Tested anyway on a setup built by hand: the page {tested}.')] + ([c] if c else []))
     return c
 
 

@@ -68,6 +68,8 @@ export interface PageDefinition {
 
   /** Repo-relative source file the simulated IDE shows. */
   ideFile: string;
+  /** Error clips: exact text of a line in `ideFile` the tester added because the doc page did not give it (see IdeTabConfig.addedText). */
+  ideAddedText?: string;
 
   /** Inclusive highlight range in `ideFile`. Guarded by `npm run doctor`. */
   startLine: number;
@@ -109,6 +111,13 @@ export interface PageDefinition {
    * and the take is the doc read on camera.
    */
   docOnly?: boolean;
+
+  /**
+   * Error clips: faulty doc text to drag-select and hold in the doc step, before the IDE (one
+   * `evidence` mark each). Overrides what the repo registered with `registerDocEvidence`. Leave
+   * unset on ✅ pages.
+   */
+  findingEvidence?: { text: string; caption?: string; clickTab?: string }[];
 
   /** How long to hold on the doc page when `docOnly` (defaults to 6000ms). */
   docViewDurationMs?: number;

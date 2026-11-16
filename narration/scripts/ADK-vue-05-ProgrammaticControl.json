@@ -3,31 +3,35 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the programmatic control page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. After clicking run agent, the run went through, but nothing on the page shows what the agent did."
+   "text": "Ok so this is the Programmatic Control page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the agent here imports agents dot shared chat."
+   "text": "So this is the problem, the agent imports agents dot shared chat, uh, never shown or linked."
   },
   {
    "at": "evidence#2",
    "text": "And the frontend uses an agent called sales."
   },
   {
-   "at": "notepad",
-   "text": "Shared chat is not on the page or linked, so the server does not start. And nothing registers the sales agent. With a stand in file the run button works, but, uh, nothing shows the reply."
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
   },
   {
    "at": "+",
-   "text": "So umm, this one needs fixing, please look into it."
+   "text": "Nothing registers the sales agent, so I added that to the runtime myself."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. After clicking run agent, it should show what the agent did, but the run finishes and nothing shows the reply."
+  },
+  {
+   "at": "notepad",
+   "text": "So shared chat is missing, so the server won't start, and with a stand-in the run still shows nothing."
+  },
+  {
+   "at": "+",
+   "text": "So kindly look into it."
   }
  ]
 }

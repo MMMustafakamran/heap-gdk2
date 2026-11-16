@@ -7,6 +7,10 @@ export interface IdeTabConfig {
   startLine: number;
   endLine: number;
   tabLabel?: string;
+  /** Error clips: exact text of a line the tester added because the doc page
+   *  did not give it; drag-selected after the doc snippet, ~2 s hold (no new
+   *  mark, stays inside `ide`); not found -> warn and skip. */
+  addedText?: string;
 }
 
 function escapeHtml(text: string): string {

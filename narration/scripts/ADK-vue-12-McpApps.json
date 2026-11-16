@@ -3,31 +3,35 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the MCP apps page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. I asked it to draw a flowchart, the chat showed a timed out error, and then the agent said it drew it, but no app showed up."
+   "text": "Ok so this is the MCP Apps page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the runtime here registers an agent that is never defined."
+   "text": "So this is the problem, this registers an agent that's never defined."
   },
   {
    "at": "evidence#2",
-   "text": "And the MCP server URL is just a placeholder, example dot com."
+   "text": "And the MCP server URL is just a placeholder, mcp dot example dot com."
   },
   {
-   "at": "notepad",
-   "text": "I filled both in, with the Excalidraw MCP server. But the chat shows a timed out error, and the app frame never shows up."
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
   },
   {
    "at": "+",
-   "text": "So yeah, kindly check this and fix it."
+   "text": "The agent wasn't defined on the page, so I added it myself, and used the Excalidraw server."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked for a drawing, it should show the MCP app, but the chat times out and the app frame stays blank."
+  },
+  {
+   "at": "notepad",
+   "text": "So the snippet has an undefined agent and a placeholder URL, and even filled in, no app shows."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, please take a look and fix this."
   }
  ]
 }

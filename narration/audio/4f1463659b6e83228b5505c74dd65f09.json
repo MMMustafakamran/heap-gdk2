@@ -1,0 +1,9 @@
+{
+ "text": "So a plain ADK agent never gets the frontend tool, the AGUI toolset step is missing here too.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 6.13,
+ "file": "4f1463659b6e83228b5505c74dd65f09.mp3",
+ "clip": "ADK-vue-20-GovernedActions",
+ "at": "notepad"
+}

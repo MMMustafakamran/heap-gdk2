@@ -1,0 +1,9 @@
+{
+ "text": "So this is the problem, the agent imports agents dot shared chat, never shown or linked.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 6.502,
+ "file": "d975af9ec9b032835d2c19a293a2c661.mp3",
+ "clip": "ADK-vue-17-HumanInTheLoop",
+ "at": "evidence"
+}

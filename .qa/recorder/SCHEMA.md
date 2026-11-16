@@ -57,7 +57,7 @@ the recorded page is created, which is when Playwright starts the video.
 | `action` | The page handler starts driving the demo (just after `demo`, once the chat is ready) |
 | `click` | A notable single click inside a handler (Frontend Cards) |
 | `error` | A run-error banner was detected; the clip opens its details next |
-| `evidence` | Back on the doc page pointing at one defect (`detail` = the text highlighted); one per spot |
+| `evidence` | One faulty doc text drag-selected and held (`detail` = the text); one per spot. Emitted by the engine's doc step (after `doc`, before `ide`) for pages with finding evidence; older repo actions may still emit it after the demo |
 | `notepad` | Notepad opens and the note is typed |
 | `notepad-closed` | Notepad closed |
 | `failure` | The take failed; the error terminal (failure evidence) follows (`detail` = error, ≤ 160 chars) |

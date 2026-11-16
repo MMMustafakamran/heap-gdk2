@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. I asked for a drawing, it should show the MCP app, but the chat times out and the app frame stays blank.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.731,
+ "file": "124aeb9835b04160bd3cc8efc9c310b6.mp3",
+ "clip": "ADK-vue-12-McpApps",
+ "at": "demo"
+}

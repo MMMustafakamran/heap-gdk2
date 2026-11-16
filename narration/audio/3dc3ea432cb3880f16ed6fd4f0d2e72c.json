@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. I asked which workspace I'm in, it should say northstar, but the agent says it can't see it.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.591,
+ "file": "3dc3ea432cb3880f16ed6fd4f0d2e72c.mp3",
+ "clip": "ADK-vue-16-SharedStateReadonly",
+ "at": "demo"
+}

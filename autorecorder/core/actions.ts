@@ -37,6 +37,9 @@ export class AgentSilentError extends Error {
  */
 const BUSY_GRACE_MS = 20_000;
 
+/** How long the chat may sit idle after its run flag cleared, with nothing rendered, before the run counts as ended empty. */
+const RUN_ENDED_EMPTY_MS = 10_000;
+
 /** What `waitForAgentResponseCompletion` observed, for handlers that check. */
 export interface ReplyObservation {
   /** Milliseconds from the call until the first reply text appeared. */
@@ -110,15 +113,37 @@ export async function waitForAgentResponseCompletion(
   const consoleSince = consoleMark(page);
   const baseCount = initialMessageCount ?? 0;
   const observed: ReplyObservation = { startedAfterMs: 0, chars: 0, streamTimedOut: false };
+  // A reply can be only a generative-UI card or frame, with no assistant text (AG2/Antigravity
+  // generative-UI pages, 2026-11-16): waiting for text alone sat out the whole start window on a
+  // card that was already on screen. Surfaces/frames present before the prompt don't count.
+  const uiBase = await page
+    .evaluate((surfaceSel) => document.querySelectorAll(surfaceSel).length + document.querySelectorAll('iframe').length, SURFACE_SELECTOR)
+    .catch(() => 0);
 
+  let sawBusy = false;
+  let idleSince = 0;
   while (Date.now() - startTime < startTimeoutMs) {
     const status = await page
-      .evaluate(({ bCount, sel }) => {
+      .evaluate(({ bCount, sel, surfaceSel, uiBase }) => {
+        // Inline only: a named helper here becomes __name(...) under tsx and throws in the page.
+        const ui = Array.from(document.querySelectorAll(`${surfaceSel}, iframe`)).filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 40 && r.height > 20 && getComputedStyle(el).visibility !== 'hidden';
+        });
+        if (ui.length > uiBase) return { started: true, len: 0 };
+        const busy =
+          !!document.querySelector('[data-copilot-running="true"]') ||
+          Array.from(
+            document.querySelectorAll('[data-testid="copilot-loading-cursor"], [aria-busy="true"], [role="progressbar"]'),
+          ).some((el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+          });
         const msgs = document.querySelectorAll(sel);
-        if (msgs.length === 0) return { started: false, len: 0 };
+        if (msgs.length === 0) return { started: false, len: 0, busy };
         // If initialMessageCount was given, ensure we are looking at a new message
         if (bCount > 0 && msgs.length <= bCount) {
-          return { started: false, len: 0 };
+          return { started: false, len: 0, busy };
         }
         // Scan back for the newest message that actually has text. Some pages
         // render an empty trailing node after the real reply -- reading the last
@@ -129,9 +154,9 @@ export async function waitForAgentResponseCompletion(
           const t = (msgs[i].textContent || '').trim();
           if (t) { txt = t; break; }
         }
-        return { started: txt.length > 2, len: txt.length };
-      }, { bCount: baseCount, sel: messageSelector })
-      .catch(() => ({ started: false, len: 0 }));
+        return { started: txt.length > 2, len: txt.length, busy };
+      }, { bCount: baseCount, sel: messageSelector, surfaceSel: SURFACE_SELECTOR, uiBase })
+      .catch(() => ({ started: false, len: 0, busy: false }));
 
     if (status.started) {
       hasStarted = true;
@@ -149,6 +174,18 @@ export async function waitForAgentResponseCompletion(
       throw new AgentSilentError(
         `Agent run failed before any reply text appeared (${Math.round((Date.now() - startTime) / 1000)}s in): ${fatal}`,
       );
+    }
+    // The chat said it was running and has stopped, with nothing on screen: the run ended empty.
+    // Waiting out the rest of the start window only froze the clip (Antigravity Surfaces/Theming,
+    // 108-118 s of still screen, review 2026-11-16). Pages without a run flag keep the full window.
+    if (status.busy) { sawBusy = true; idleSince = 0; }
+    else if (sawBusy) {
+      if (!idleSince) idleSince = Date.now();
+      else if (Date.now() - idleSince >= RUN_ENDED_EMPTY_MS) {
+        throw new AgentSilentError(
+          `The run ended with no reply (${Math.round((Date.now() - startTime) / 1000)}s in): the chat stopped running and no assistant message or UI appeared.`,
+        );
+      }
     }
     await sleep(300);
   }
@@ -203,7 +240,9 @@ export async function waitForAgentResponseCompletion(
 
       // The count is part of the compared value, so a new message arriving
       // restarts the stability window instead of looking like "no change".
-      if (currentText.length > 0 && signature === previousSignature) {
+      // A card-only reply has no text; its surface/frame signature is what must hold still.
+      const hasContent = currentText.length > 0 || /^[1-9]|\/[1-9]/.test(snap.ui);
+      if (hasContent && signature === previousSignature) {
         stableCount++;
         // Stable for 4 consecutive checks (1.6s) and the chat no longer running: finished. A run
         // flag that never clears (seen on broken agents) is not waited out forever: after

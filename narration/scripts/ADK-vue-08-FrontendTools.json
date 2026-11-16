@@ -3,27 +3,27 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the frontend tools page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. I asked it to show only sev one incidents, and the agent just answered in text. The filter stayed on all."
+   "text": "Ok so this is the Frontend Tools page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the page says the agent can call the tool, and the frontend runs it."
+   "text": "So this is the problem, it says the agent can call the tool, but there's no agent side step at all."
+  },
+  {
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked to show only sev one incidents, it should change the filter, but the agent just answers in text and it stays on all."
   },
   {
    "at": "notepad",
-   "text": "But the page only shows the Vue side. With a normal ADK agent the tool never reaches the model, because the agent needs the AGUI toolset, and, uh, this page never says that. With it added, it works."
+   "text": "So a plain ADK agent needs the AGUI toolset to get the tool, umm, and the page never says that. With it added, it works."
   },
   {
    "at": "+",
-   "text": "So kindly look into it."
+   "text": "That's the problem here, please have a look."
   }
  ]
 }

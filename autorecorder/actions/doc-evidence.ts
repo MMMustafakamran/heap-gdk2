@@ -239,7 +239,9 @@ export async function showFinding(
   note: string | undefined,
   fileName = `finding-${config.id}.txt`,
 ): Promise<void> {
-  await showDocEvidence(page, config, items).catch((e) => console.warn(`   ⚠️ Doc evidence step failed: ${String(e).slice(0, 120)}`));
+  // Doc evidence is highlighted in the doc step now (core/doc-evidence.ts, registered at module load);
+  // no doc revisit after the demo. `items` is kept so the callers do not change.
+  void items;
   if (!note) return;
   mark('notepad');
   await openNotepad(page, fileName);

@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. After clicking run agent, it should show what the agent did, but the run finishes and nothing shows the reply.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.591,
+ "file": "be84aefc19cd1ca4ced2587e82e2d0cd.mp3",
+ "clip": "ADK-vue-05-ProgrammaticControl",
+ "at": "demo"
+}

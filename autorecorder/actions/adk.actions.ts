@@ -23,6 +23,7 @@ export const runVueFrontendToolsAction: PageActionHandler = async (page, config,
 
 import { runStandardAction } from '../core/actions';
 import { type DocEvidence, showFinding } from './doc-evidence';
+import { registerDocEvidence } from '../core/doc-evidence';
 
 export const FINDING_EVIDENCE: Record<string, DocEvidence[]> = {
   quickstart: [
@@ -30,13 +31,15 @@ export const FINDING_EVIDENCE: Record<string, DocEvidence[]> = {
     { text: 'Start building', caption: 'Only a setup-prompt wizard, no install / runtime / agent steps' },
   ],
 };
+// Doc step highlights these (core/doc-evidence.ts), before the IDE. No KNOWN_ISSUE set in this repo.
+registerDocEvidence(FINDING_EVIDENCE);
 
 /** Finding clips end with the finding typed into Notepad (REPOS.md Rule 6). */
 const QUICKSTART_FINDING = [
-  'the vue quickstart page in the browser is just the adk landing page',
-  'no npm create vue, no copilotkit vue install, no runtime, no adk agent',
-  'only a prompt wizard for a coding agent',
-  'so theres no vue quickstart to follow, i wired the vue app to an adk backend myself',
+  "vue quickstart should walk u thru a vue app with an adk agent",
+  "the link opens the google adk landing page with a prompt wizard for a coding agent",
+  "no create vue step, no copilotkit vue install, no runtime and no adk agent, i wired it all myself",
+  "so there is no working vue setup for the other pages to build on",
 ].join('\n');
 
 export const runVueQuickstartAction: PageActionHandler = async (page, config, root, ctx) => {

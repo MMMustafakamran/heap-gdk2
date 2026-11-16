@@ -36,11 +36,11 @@ Segments in order, each starting at a mark:
 
 | Segment | Marks | Shows |
 |---|---|---|
-| doc | `doc`, `doc2` | The docs page under test, wheel-scrolled, right framework selected in the sidebar |
-| ide | `ide` | VS Code with the doc's code (maybe `package.json` / versions) |
+| doc | `doc`, `doc2` | The docs page under test, wheel-scrolled, right framework selected in the sidebar. Opening line says the problem is being reported |
+| evidence | `evidence` (one per snippet, inside the doc segment) | ❌/⚠️ full clips only. After the opening line, the faulty doc text drag-selected (normal blue selection) and held, before the IDE segment. Level-2 clips have none |
+| ide | `ide` | VS Code with the doc's code (maybe `package.json` / versions). If the tester added code (HARNESS), that added line is drag-selected and held (no mark of its own) |
 | demo | `demo`, `action`, `click`, `error` | The app on localhost; the feature used, the result visible. Long agent waits are normal |
-| evidence | `evidence` (one per snippet) | ❌/⚠️ only. Back on the doc, the faulty text drag-selected (normal blue selection) and held |
-| notepad | `notepad` | ❌/⚠️ only. Notepad typing the finding in casual text |
+| notepad | `notepad` | ❌/⚠️ full clips only. Notepad with the three-part note (doc says / happened / why it broke), casual text |
 | outro | `notepad-closed`, `end` | Notepad closed, end of clip |
 | terminal | `terminal`, `console` | Optional log window; red log text is normal |
 | failure | `failure` | Failed takes only: the **end-of-clip error terminal** (see rule b) |
@@ -75,7 +75,7 @@ available…", blue/purple "Not supported…"), blue drag-selection.
 | ✅ page now fails | Expected ✅, but the demo shows an error, nothing rendered, a failed checkpoint, or the failure terminal. |
 | glitch | Black stretch, frozen screen past a plausible wait (`checks.freezes[].ok == false`), marks out of order or past the end, clip cut off, a step that clearly misfired (cursor clicking nothing, wrong page, stuck loading), harness trouble that isn't the doc's fault (server not running, connection refused, wrong port, recorder crash before the demo). |
 | injected overlay | Anything drawn onto the page by the recorder: red boxes/outlines, caption pills with explanatory text, arrows, "FINDING" banners. Check every `checks.look_at` red run frame. |
-| missing segment | Level-1 ❌ clip without demo → evidence (drag-select) → Notepad (level-2 pages, `KNOWN_ISSUE`, end after the demo on purpose: not missing); ✅ clip with a Notepad (except the temperature-only case, [QA-RULES.md](QA-RULES.md) §7). |
+| missing segment | Full ❌/⚠️ finding clip (level 1) missing one of: doc with evidence (drag-select) → ide → demo → Notepad. **Added code check (owner, 2026-11-13):** when the finding or note says code was missing or not shown on the page (a HARNESS addition), the `ide` segment must show that added line drag-selected, and the voice must say it wasn't on the page; if either is absent, flag it. Level-2 pages (`KNOWN_ISSUE`: doc opening line → ide → demo, end after the demo on purpose: not missing); ✅ clip with a Notepad (except the temperature-only case, [QA-RULES.md](QA-RULES.md) §7). |
 | formal Notepad | Headings, numbered/bulleted lists, ALL-CAPS title, long `https://` URLs. Casual lowercase with small typos is correct. |
 | audio-fit | CI's fit flagged a narration line (`overlap`, `gap`, `past-end`): the saved line no longer fits the new marks. Report the line and the flag; never rewrite it (rewrites are local only). |
 | status honesty | ⚠️ is only for "main feature works, minor defect". If the main feature fails, the right status is ❌: flag it. If in doubt whether the main feature works, it is ❌. |
@@ -130,3 +130,16 @@ A single Haiku agent at high effort over 5 known clips got **3/5 right**:
   allowed (rule a); the finding text said so. Fix: read the finding text before judging the demo.
 - It flagged **Reasoning ⚠️ as really ❌** (main feature not working). That flag was **correct**:
   ⚠️ means the main feature works. Keep raising it.
+
+## 9. Acting on the verdicts (owner, 2026-11-13)
+
+The reviewers stay read-only; the agent that dispatched them must act on **every** verdict before upload ([WORKFLOW.md](WORKFLOW.md) A7-8, B5):
+
+| Verdict | Action |
+|---|---|
+| `pass` | Upload. |
+| `rerecord` | Fix the cause (recorder action, harness, server), refilm (CI `-f pages=<ids>`, or one local take for a page that keeps failing in CI), review the new take. |
+| `new_failure` / `finding_resolved` / `finding_changed` / `status_mismatch` | Probe the page (3 runs). Confirmed → update status, `FINDINGS.md`, evidence, Notepad note, narration (+ audio), refilm, review again. Not confirmed → refilm once; still differs → treat as confirmed and say so. |
+| audio-fit flag | Shorten the line, regenerate it locally, re-mix. |
+
+At most 3 refilm rounds per page. Then tell the owner: every status, finding or narration change (old → new, why), and what is still bad.

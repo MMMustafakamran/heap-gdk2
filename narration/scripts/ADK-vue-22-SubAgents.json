@@ -3,31 +3,35 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the sub agents page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. I asked it to write a short paragraph, and the supervisor answered, but there is nothing showing the delegations."
+   "text": "Ok so this is the Sub-agents page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the delegation log section here says the frontend renders it, but there is no code at all."
+   "text": "So this is the problem, the delegation log section has no code at all."
   },
   {
    "at": "evidence#2",
-   "text": "And the agent imports agents dot shared chat, uh, which is not shown or linked."
+   "text": "And the agent imports agents dot shared chat, umm, never shown or linked."
   },
   {
-   "at": "notepad",
-   "text": "So the backend does not start as written. With a stand in file it answers, but there is no delegation log to see, because the page never shows how to build it."
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
   },
   {
    "at": "+",
-   "text": "Okay, so that is what is missing here, please fix it."
+   "text": "Shared chat wasn't on the page, so I added a stand-in for it myself."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. It should show the delegation log, but with the stand-in it just answers, there's no log to see."
+  },
+  {
+   "at": "notepad",
+   "text": "So the backend won't start as written, and the frontend part for the log is missing."
+  },
+  {
+   "at": "+",
+   "text": "Please have a look at this one."
   }
  ]
 }

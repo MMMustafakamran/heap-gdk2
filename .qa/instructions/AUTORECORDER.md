@@ -23,11 +23,18 @@ Never use a full humanized take to find out what a page does.
 
 ## 2. Finding clips (❌ / ⚠️ pages)
 
-Order: **demo → back to the doc → highlight each faulty snippet → Notepad note.**
+Order (owner, 2026-11-13): **doc (with highlight) → ide (with added code) → demo → Notepad note.**
 
-1. Demo: show the defect happening in the app (crash, error banner, nothing rendered).
-2. Go back to the doc page. For each faulty snippet or sentence (empty or cut-off snippet, undefined identifier, wrong-framework code, "Not supported" banner): wheel-scroll to it, drag-select it, pause. Click a language tab first if the snippet sits behind one.
-3. Notepad: open it from the simulated taskbar and paste the note in (one Ctrl+V, not typed; owner, 2026-11-09). It stays open until the Notepad voice-over has finished.
+Full clips:
+
+1. **Doc:** the docs page under test, wheel-scrolled to each faulty snippet or sentence (empty or cut-off snippet, undefined identifier, wrong-framework code, "Not supported" banner, a missing piece). Click a language tab first if the snippet sits behind one. Drag-select each one, pause on it. Each highlight is an `evidence` mark inside the `doc` segment, so it comes before the IDE segment.
+2. **IDE:** VS Code with the doc's code. If the page was missing something and the tester added it (HARNESS code), that added line is drag-selected and held ~2 s. Set it per IDE tab with `addedText` (exact text of one added line, in the page's `ideTabs`); the recorder finds it by text, warns and skips if it isn't there. One entry per added line. Nothing added → no selection. No mark of its own (it stays inside `ide`). Applies to ❌ and ⚠️ whenever the failure comes from a missing or partial snippet.
+3. **Demo:** show the defect happening in the app (crash, error banner, nothing rendered, a plain text reply where a component should be).
+4. **Notepad:** open it from the simulated taskbar and paste the note in (one Ctrl+V, not typed; owner, 2026-11-09). It stays open until the Notepad voice-over has finished.
+
+Level 2 (`KNOWN_ISSUE`, already reported): doc opening line → ide → demo, and the clip ends after the demo. No highlight, no Notepad.
+
+A failed take still ends with the failure terminal (section 1).
 
 **Check every evidence text against the rendered page, not the `.md` export.** The two can differ.
 
@@ -35,7 +42,7 @@ CI enforces it: `tools/evidence_check.mjs` (plan job) holds a page whose `FINDIN
 
 ### Notepad note
 
-- About **5-8 lines**: what the doc says, what actually happened, the harness fix if any. A viewer who skips the doc and code segments must still know what broke.
+- About **5-8 lines**, always in this order: **what the doc says should happen → what happened instead → why it broke / what's missing**, then the harness fix if any. A viewer who skips the doc and code segments must still know what broke.
 - **Written like the owner jots it down in a hurry** (owner, 2026-11-09): no title line and **no finding numbers**; no capital letters at all, error names included (`ModuleNotFoundError` -> `modulenotfound`); hard tokens shortened or loose (`google-genai 2.x` -> `google genai 2`); no brackets, quotes or colons; sloppy commas (`genai 2,new`), uneven lines, shorthand (u, thru, dont); a slip or two left in. Example:
   ```
   install step only says pip install ag-ui-antigravity google-antigravity
@@ -59,6 +66,7 @@ CI enforces it: `tools/evidence_check.mjs` (plan job) holds a page whose `FINDIN
 ## 4. Timeline marks
 
 - Every clip emits a mark at the start of each segment with `mark(label, detail?)` from `core/timeline.ts`. Labels in use: `doc`, `ide`, `terminal`, `demo`, `action`, `click`, `error`, `evidence` (one per highlighted snippet, detail = the text), `notepad`, `notepad-closed`, `failure` (failed take: the error terminal follows), `end`.
+- Finding clip order: `doc` → `evidence` (inside the doc segment, before `ide`) → `ide` → `demo` → `notepad` → `notepad-closed` → `end`. `addedText` emits no mark.
 - The timeline is saved next to the video as `<clip>.timeline.json` (schema 2: `marks` plus `checkpoints`, `keyframes`, `durationS`), with `<clip>.events.jsonl` and `<clip>.frames/`. `t` in seconds from video start. Contract: `qa-kit/recorder/SCHEMA.md`.
 - Narration lines attach to these labels ([VOICE.md](VOICE.md)). A missing mark means the clip can't be narrated. A new segment type needs a new `mark()` at its start.
 
@@ -66,9 +74,9 @@ CI enforces it: `tools/evidence_check.mjs` (plan job) holds a page whose `FINDIN
 
 | What | Where |
 |---|---|
-| `humanizeNote()`, `showDocEvidence()`, `FINDING_EVIDENCE`, `writeFinding()`, `dragSelect()` | `LangGraph-react/autorecorder/actions/langgraph.actions.ts` |
-| Notepad overlay: `openNotepad`, `typeInNotepad` (`'\b'` = backspace), `closeNotepad` | `LangGraph-react/autorecorder/core/overlays/notepad.ts` |
-| Timeline: `startTimeline`, `mark`, `saveTimeline` | `LangGraph-react/autorecorder/core/timeline.ts` |
+| `humanizeNote()`, `showDocEvidence()`, `FINDING_EVIDENCE`, `writeFinding()`, `dragSelect()` | `archive/langgraph/react/autorecorder/actions/langgraph.actions.ts` |
+| Notepad overlay: `openNotepad`, `typeInNotepad` (`'\b'` = backspace), `closeNotepad` | `archive/langgraph/react/autorecorder/core/overlays/notepad.ts` |
+| Timeline: `startTimeline`, `mark`, `saveTimeline` | `archive/langgraph/react/autorecorder/core/timeline.ts` |
 
 `FINDING_EVIDENCE` entry: `{ text, caption, clickTab? }`. `text` is matched on the rendered page; `caption` goes to the recorder log only, never on screen.
 

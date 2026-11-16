@@ -1,0 +1,9 @@
+{
+ "text": "So this is the problem, it says CopilotKit renders your component when the agent calls the tool, but no agent side is shown.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 7.941,
+ "file": "90a7d20ec7840c962914338c1d672933.mp3",
+ "clip": "ADK-vue-09-ToolBased",
+ "at": "evidence"
+}

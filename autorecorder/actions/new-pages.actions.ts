@@ -8,6 +8,7 @@ import { type ActionContext, type PageActionHandler, type PageRecordConfig } fro
 import { runStandardAction, sendPrompt } from '../core/actions';
 import { sleep } from '../core/overlays/cursor';
 import { type DocEvidence, showFinding } from './doc-evidence';
+import { registerDocEvidence } from '../core/doc-evidence';
 import { glideClick, glideTo } from './glide-click';
 import { checkpoint, mark, probeText } from '../core/timeline';
 
@@ -29,11 +30,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
   'frontend-tools': {
     evidence: [{ text: 'The agent can then call it like any other tool and your frontend runs it in the browser.', caption: 'no backend step: the ADK agent needs AGUIToolset()' }],
     note: [
-      'page only shows the vue side, useFrontendTool in DashboardAgent.vue',
-      'nothing about the adk agent, no AGUIToolset step like the hitl page has',
-      'with a plain adk agent the tool never reaches the model',
-      'asked to show only sev1 incidents, agent just answers in text, filter stays all',
-      'adding AGUIToolset to the agent makes it work, page never says so',
+      "page says the agent can call the frontend tool and the browser runs it",
+      "asked to show only sev1 incidents, agent answers in text and the filter stays on all",
+      "there is no agent side step, a plain adk agent never gets the tool without aguitoolset",
+      "with aguitoolset added by hand it works, so the page is missing that step",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       await promptAndWaitFor(page, config, /sev ?1/i, 60000);
@@ -46,10 +46,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
   'tool-based': {
     evidence: [{ text: 'When the agent calls the tool, CopilotKit renders your component inline in the chat', caption: 'no backend step: the ADK agent needs AGUIToolset()' }],
     note: [
-      'page registers WeatherCard with useComponent and shows no agent side',
-      'plain adk agent never gets the component as a tool',
-      'asked for the paris weather card, it just typed a text card in the chat',
-      'no WeatherCard rendered, with AGUIToolset on the agent it shows up',
+      "page says when the agent calls the tool weathercard renders in the chat",
+      "asked for the paris weather card, the agent typed a text card and no weathercard showed",
+      "no agent side is shown, a plain adk agent needs aguitoolset to get the tool",
+      "with aguitoolset added by hand the card shows up, so the page is missing that step",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       await promptAndWaitFor(page, config, /Paris/i, 60000);
@@ -61,10 +61,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
   'governed-actions': {
     evidence: [{ text: 'The agent proposes the action, the UI renders the checkpoint', caption: 'no agent shown; a plain ADK agent never sees the tool' }],
     note: [
-      'page has the approval card and the useHumanInTheLoop tool but no agent at all',
-      'plain adk agent doesnt get the frontend tool',
-      'asked it to call approve_governed_action, it says it has no tools',
-      'no approval card, same AGUIToolset step missing here',
+      "governed actions page says the agent proposes the action and u approve it in a card",
+      "asked it to call approve_governed_action, it says it has no tools and no approval card shows",
+      "no agent is shown at all, a plain adk agent never gets the tool without aguitoolset",
+      "so the approval step cant run as written",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       await promptAndWaitFor(page, config, /tool|email|access/i, 60000);
@@ -79,10 +79,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       { text: 'tool_context.state["document"] = document', caption: 'agent only writes document' },
     ],
     note: [
-      'ResearchProgress reads status draft completed total from the agent state',
-      'but the agent on the page only ever writes state document',
-      'asked it to research the bicycle and write a draft',
-      'agent says its in the document view but the panel stays on idle, empty bar',
+      "page says the progress panel follows the agent state live",
+      "asked it to research the bicycle, the panel stays on idle with an empty bar",
+      "the ui reads status draft completed and total but the agent only writes document",
+      "so nothing the agent writes ever reaches the panel",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       await promptAndWaitFor(page, config, /bicycle|draft|document/i, 60000);
@@ -101,10 +101,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       { text: 'before_model_callback=_inject_preferences,', caption: '_inject_preferences never shown' },
     ],
     note: [
-      'agent snippet is only the LlmAgent call',
-      'set_notes _inject_preferences _INSTRUCTION get_model are used but never shown',
-      'it says see src agents shared_state_read_write_agent.py but doesnt link it',
-      'as written its a nameerror, had to copy the showcase file to run it',
+      "page says the agent and the ui share the notes state",
+      "as written the agent dies with nameerror, it only ran after i copied the showcase file",
+      "set_notes _inject_preferences _instruction and get_model are never shown",
+      "the page says see the agent file but never links it, so u cant run it as written",
     ].join('\n'),
   },
   // FINDINGS.md #5
@@ -114,11 +114,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       { text: 'import TimePickerCard from "./TimePickerCard.vue";', caption: 'TimePickerCard.vue never shown' },
     ],
     note: [
-      'agent imports get_model and stop_on_terminal_text from agents.shared_chat',
-      'that file isnt on the page or linked, backend wont start, modulenotfound',
-      'MeetingApproval also imports TimePickerCard.vue which is never shown',
-      'and the agent prompt says generate_task_steps, the vue tool is schedule_meeting',
-      'picker only showed up with a stand in shared_chat and a picker i wrote',
+      "hitl page says the agent asks u to pick a time in a card",
+      "the picker only showed up with a stand in shared chat and a picker i wrote myself",
+      "the agent imports agents.shared_chat which is never shown or linked, so the backend wont start with modulenotfound",
+      "timepickercard.vue is imported but never shown either",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       if (!(await promptAndWaitFor(page, config, /Pick a time/, 60000))) ctx.fail('No time picker card showed up');
@@ -131,10 +130,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       { text: 'const { agent } = useAgent({ agentId: "sales" });', caption: 'sales is never registered' },
     ],
     note: [
-      'backend step is the hitl planning agent, imports agents.shared_chat',
-      'shared_chat isnt on the page or linked so the server wont start, modulenotfound',
-      'frontend uses agent sales, nothing registers sales anywhere',
-      'with a stand in shared_chat the run button works but nothing shows the reply',
+      "page says run the agent from ur own button and show what it did",
+      "the run button only does something with a stand in agent, and nothing shows the reply",
+      "the agent imports agents.shared_chat which is never shown or linked, so the server wont start with modulenotfound",
+      "the frontend uses an agent called sales that is never registered",
     ].join('\n'),
     demo: async (page, _config, _root, ctx) => {
       const run = page.getByRole('button', { name: 'Run agent' });
@@ -154,10 +153,10 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
   'shared-state-readonly': {
     evidence: [{ text: "Surfaced to the agent through the backend's CopilotKit middleware on every turn.", caption: 'the agent never sees the context' }],
     note: [
-      'page says useAgentContext values reach the agent on every turn',
-      'set workspace to northstar like the doc, asked which workspace am i in',
-      'agent says it cant see that, never gets northstar',
-      'same with AGUIToolset on the agent, page shows no backend side for this',
+      "page says useagentcontext values reach the agent on every turn",
+      "set workspace to northstar, asked which workspace am i in, the agent says it cant see it",
+      "the page shows no backend side for this, and adding aguitoolset doesnt change it",
+      "so the context never reaches the agent",
     ].join('\n'),
   },
   // FINDINGS.md #7
@@ -167,19 +166,20 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       { text: 'https://mcp.example.com/mcp', caption: 'placeholder MCP server url' },
     ],
     note: [
-      'runtime snippet registers default agent but agent is never defined',
-      'and the mcp server url is just mcp.example.com/mcp, a placeholder',
-      'filled both in with the excalidraw mcp server',
-      'chat shows timed out waiting for agent to become idle, app frame stays blank',
+      "page says the mcp app shows up right in the chat",
+      "the runtime snippet uses an agent that is never defined and the server url is the mcp.example.com placeholder",
+      "with the agent and url filled in by hand the chat times out and the app frame stays blank",
+      "so the snippet cant run as written",
     ].join('\n'),
   },
   // FINDINGS.md #8
   webmcp: {
     evidence: [{ text: 'searchOrders(', caption: 'searchOrders is never defined' }],
     note: [
-      'OrderSearch.vue calls searchOrders but the page never defines or imports it',
-      'asked the agent to use the searchOrders tool to find my open orders',
-      'chat never replies, just sits there',
+      "page says the agent can use the searchorders tool from ordersearch.vue",
+      "asked it to find my open orders, chat never replies and just sits there",
+      "searchorders is never defined or imported on the page",
+      "so the tool cant work as written",
     ].join('\n'),
     demo: async (page, config, _root, ctx) => {
       await sendPrompt(page, config.prompt, { timeoutMs: 15000 });
@@ -198,13 +198,16 @@ export const NEW_FINDINGS: Record<string, NewFinding> = {
       if (!(await promptAndWaitFor(page, config, /scatter|Rayleigh|wavelength/i, 120000))) ctx.fail('The supervisor never replied');
     },
     note: [
-      'delegation log section says the frontend renders the delegations slot but has no code at all',
-      'subagents_agent.py imports agents.shared_chat which isnt on the page or linked',
-      'so the backend wont start as written, modulenotfound',
-      'with a stand in shared_chat it answers but theres no delegation log to see',
+      "subagents page says the ui shows a delegation log of the subagents",
+      "with a stand in shared chat the supervisor answers but there is no delegation log",
+      "the log section has no code at all",
+      "the agent imports agents.shared_chat which is never shown or linked, so the backend wont start",
     ].join('\n'),
   },
 };
+
+// Doc step highlights each page's evidence (core/doc-evidence.ts), before the IDE. No KNOWN_ISSUE set in this repo.
+registerDocEvidence(Object.fromEntries(Object.entries(NEW_FINDINGS).map(([id, f]) => [id, f.evidence])));
 
 export const runNewFindingAction: PageActionHandler = async (page, config, root, ctx) => {
   const f = NEW_FINDINGS[config.id];

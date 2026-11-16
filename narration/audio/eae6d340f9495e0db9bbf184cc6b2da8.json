@@ -1,0 +1,9 @@
+{
+ "text": "So the context never reaches the agent, and the page shows no backend side for this.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 6.641,
+ "file": "eae6d340f9495e0db9bbf184cc6b2da8.mp3",
+ "clip": "ADK-vue-16-SharedStateReadonly",
+ "at": "notepad"
+}

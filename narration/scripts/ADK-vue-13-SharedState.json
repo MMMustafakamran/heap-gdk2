@@ -3,31 +3,35 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the shared state page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. After asking it to remember my favourite colour, the note showed up, but only with the showcase file I copied in."
+   "text": "Ok so this is the Shared State page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the agent snippet uses set notes here, which is never shown."
+   "text": "So this is the problem, umm, set notes is used here but never shown."
   },
   {
    "at": "evidence#2",
-   "text": "And this inject preferences callback is not shown either."
+   "text": "Same with inject preferences."
   },
   {
-   "at": "notepad",
-   "text": "Basically the snippet is only the LLM agent call. Set notes, inject preferences, the instruction and get model are never shown, and the file it mentions is not linked. So as written it is a name error, and I had to copy the showcase file to run it."
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
   },
   {
    "at": "+",
-   "text": "So yeah, please take a look and fix this."
+   "text": "These helpers weren't on the page, so I copied them from the showcase myself."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. It should run as written, but the agent only works with the showcase helpers, as written it's a name error."
+  },
+  {
+   "at": "notepad",
+   "text": "So the page says see the agent file but never links it, so you can't run the agent as written."
+  },
+  {
+   "at": "+",
+   "text": "That's what's breaking here, kindly have it fixed."
   }
  ]
 }

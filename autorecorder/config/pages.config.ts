@@ -24,7 +24,7 @@ export const PAGES = definePages([
     endLine: 20,
     extraTabs: [
       { filePath: 'my-copilot-app/package.json', startLine: 13, endLine: 17 },
-      { filePath: 'my-copilot-app/server.adk.ts', startLine: 1, endLine: 40 },
+      { filePath: 'my-copilot-app/server.adk.ts', startLine: 1, endLine: 40, addedText: '// HARNESS: GoogleADK-Vue runtime on port 8120 (QA-RULES §4; doc: 8200). The Vue quickstart registers' },
       { filePath: 'backend/main.py', startLine: 1, endLine: 26 },
     ],
     prompt: 'Tell me in one sentence what this app can do.',
@@ -78,6 +78,10 @@ export const PAGES = definePages([
     extraTabs: [
       { filePath: 'my-copilot-app/src/pages/ProgrammaticControlApp.vue', startLine: 1, endLine: 13 },
       { filePath: 'backend/agents/hitl_in_chat_agent.py', startLine: 1, endLine: 28 },
+      // HARNESS (addedText, not in the doc's tabs): the stand-in agents.shared_chat the agent files import.
+      { filePath: 'backend/agents/shared_chat.py', startLine: 1, endLine: 12, addedText: '# HARNESS: `agents.shared_chat` is imported by every agent file on the Vue ADK pages (HITL, programmatic' },
+      // HARNESS (addedText, not in the doc's tabs): the sales agent registration the page relies on.
+      { filePath: 'my-copilot-app/server.adk.ts', startLine: 28, endLine: 36, addedText: 'sales: page("hitl"), // HARNESS: Programmatic Control\'s agentId "sales"; the page\'s agent is hitl_in_chat_agent.py' },
     ],
     prompt: 'Summarize the latest sales data',
   },
@@ -169,7 +173,7 @@ export const PAGES = definePages([
     videoName: 'McpApps',
     docPath: 'generative-ui/mcp-apps',
     route: '/mcp-apps',
-    ideFile: 'my-copilot-app/server.adk.ts',
+    ideFile: 'my-copilot-app/server.adk.ts', ideAddedText: "const agent = quick(); // HARNESS: the MCP Apps and Headless Threads snippets use an undefined `agent`",
     startLine: 41,
     endLine: 56,
     extraTabs: [{ filePath: 'my-copilot-app/src/pages/McpAppsApp.vue', startLine: 1, endLine: 10 }],
@@ -187,7 +191,7 @@ export const PAGES = definePages([
     endLine: 23,
     extraTabs: [
       { filePath: 'my-copilot-app/src/components/v3/SharedWorkspaceWrite.vue', startLine: 1, endLine: 18 },
-      { filePath: 'backend/agents/shared_state_read_write_agent.py', startLine: 1, endLine: 40 },
+      { filePath: 'backend/agents/shared_state_read_write_agent.py', startLine: 1, endLine: 40, addedText: '# HARNESS: imports, set_notes, _inject_preferences, _INSTRUCTION are never shown on the page' },
     ],
     prompt: 'Please remember that my favourite colour is green.',
   },
@@ -230,7 +234,7 @@ export const PAGES = definePages([
   },
   { id: 'hitl', name: 'HITL Overview (Vue)', videoName: 'HumanInTheLoop', docPath: 'human-in-the-loop', route: '/hitl',
     ideFile: 'my-copilot-app/src/components/v4/hitl/MeetingApproval.vue', startLine: 1, endLine: 18,
-    extraTabs: [{ filePath: 'backend/agents/hitl_in_chat_agent.py', startLine: 1, endLine: 28 }, { filePath: 'my-copilot-app/src/components/v4/hitl/TimePickerCard.vue', startLine: 1, endLine: 22 }],
+    extraTabs: [{ filePath: 'backend/agents/hitl_in_chat_agent.py', startLine: 1, endLine: 28 }, { filePath: 'my-copilot-app/src/components/v4/hitl/TimePickerCard.vue', startLine: 1, endLine: 22, addedText: '<!-- HARNESS: the HITL overview imports ./TimePickerCard.vue but never shows it. Minimal picker' }],
     prompt: 'Please book an onboarding call with the sales team, my name is Sam.', waitAfterPromptMs: 5000 },
   { id: 'use-interrupt', name: 'useInterrupt (Vue)', videoName: 'UseInterrupt', docPath: 'human-in-the-loop/useInterrupt', route: '',
     ideFile: 'my-copilot-app/VERSIONS.md', startLine: 1, endLine: 1, prompt: '', docOnly: true },
@@ -238,15 +242,17 @@ export const PAGES = definePages([
     ideFile: 'my-copilot-app/VERSIONS.md', startLine: 1, endLine: 1, prompt: '', docOnly: true },
   { id: 'governed-actions', name: 'Governed Actions (Vue)', videoName: 'GovernedActions', docPath: 'human-in-the-loop/governed-actions', route: '/governed-actions',
     ideFile: 'my-copilot-app/src/components/v4/governed/GovernedActionTool.vue', startLine: 1, endLine: 24,
-    extraTabs: [{ filePath: 'my-copilot-app/src/components/v4/governed/GovernedActionCard.vue', startLine: 1, endLine: 46 }, { filePath: 'my-copilot-app/src/components/v4/governed/GovernedActionApproval.vue', startLine: 1, endLine: 58 }, { filePath: 'my-copilot-app/src/pages/GovernedActionsApp.vue', startLine: 1, endLine: 14 }],
+    extraTabs: [{ filePath: 'my-copilot-app/src/components/v4/governed/GovernedActionCard.vue', startLine: 1, endLine: 46 }, { filePath: 'my-copilot-app/src/components/v4/governed/GovernedActionApproval.vue', startLine: 1, endLine: 58 }, { filePath: 'my-copilot-app/src/pages/GovernedActionsApp.vue', startLine: 1, endLine: 14, addedText: '<!-- HARNESS: doc runtime-url="/api/copilotkit" (404 on Vite); page shows no backend, so the harness runtime 8120 ("default" = quickstart agent on 8121) -->' }],
     prompt: 'Send an email to bob at example dot com saying hi. Before sending, call approve_governed_action with id a1, summary Send email to Bob, tool send_email, reference POL-7, verdict require_approval.', waitAfterPromptMs: 5000 },
   { id: 'webmcp', name: 'WebMCP (Vue)', videoName: 'WebMcp', docPath: 'webmcp', route: '/webmcp',
     ideFile: 'my-copilot-app/src/components/v4/webmcp/OrderSearch.vue', startLine: 1, endLine: 21,
-    extraTabs: [{ filePath: 'my-copilot-app/src/pages/WebmcpApp.vue', startLine: 1, endLine: 11 }],
+    extraTabs: [{ filePath: 'my-copilot-app/src/pages/WebmcpApp.vue', startLine: 1, endLine: 11, addedText: '// HARNESS: the WebMCP page shows OrderSearch.vue only ("must run inside your existing CopilotKitProvider"); provider + chat from the quickstart.' }],
     prompt: 'Use the searchOrders tool to find my open orders.', waitAfterPromptMs: 5000 },
   { id: 'subagents', name: 'Sub-Agents (Vue)', videoName: 'SubAgents', docPath: 'multi-agent/subagents', route: '/subagents',
     ideFile: 'backend/agents/subagents_agent.py', startLine: 1, endLine: 60,
-    extraTabs: [{ filePath: 'my-copilot-app/src/pages/SubagentsApp.vue', startLine: 1, endLine: 11 }],
+    extraTabs: [{ filePath: 'my-copilot-app/src/pages/SubagentsApp.vue', startLine: 1, endLine: 11 },
+      // HARNESS (addedText, not in the doc's tabs): the stand-in agents.shared_chat that subagents_agent.py imports.
+      { filePath: 'backend/agents/shared_chat.py', startLine: 1, endLine: 12, addedText: '# HARNESS: `agents.shared_chat` is imported by every agent file on the Vue ADK pages (HITL, programmatic' }],
     prompt: 'Write a short paragraph about why the sky is blue.', waitAfterPromptMs: 10000 },
   {
     id: 'inspector',

@@ -70,3 +70,19 @@ Where it comes from:
 
 Passing takes never show it. The `failure` mark (detail = the error, ≤ 160 chars) marks where it
 starts in the timeline.
+
+## Doc evidence in the doc step (error clips)
+
+Order for ❌/⚠️ clips: doc (skim, doc snippet selected, then each faulty text drag-selected and
+held, one `evidence` mark each) → IDE (doc code, then the line the tester added, `addedText`) →
+demo → Notepad. `core/doc-evidence.ts` does the highlight inside `showDocPage`, before the taskbar
+switch; it never throws (not found → warn, skip) and is a no-op for pages without evidence.
+
+Where the engine gets the list (first match wins):
+1. `findingEvidence?: { text, caption?, clickTab? }[]` on the page definition (`config/pages.config.ts`).
+2. `registerDocEvidence(FINDING_EVIDENCE, { skip: KNOWN_ISSUE })` from `core/doc-evidence`, called
+   once at module load of the repo's actions file (level-2 pages in `skip` get no highlight).
+
+Repos that switch over must stop calling `showDocEvidence` after the demo (keep only the Notepad
+part of `showFinding`), or the text is highlighted twice. IDE tabs: `addedText` on an
+`IdeTabConfig` = exact text of a line the tester added because the doc did not give it.

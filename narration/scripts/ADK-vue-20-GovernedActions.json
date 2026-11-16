@@ -3,27 +3,31 @@
  "segments": [
   {
    "at": "doc",
-   "text": "Ok so, this is the governed action approval page in the CopilotKit docs, for Vue with Google ADK, and I have implemented this page in my project."
-  },
-  {
-   "at": "ide",
-   "text": "So this is my project, umm, and this is the exact code from the doc."
-  },
-  {
-   "at": "demo",
-   "text": "Moving on to the demo. I asked it to call the approval tool, and it said it has no tools. No approval card showed up."
+   "text": "Ok so this is the Governed Actions page for Google ADK with Vue, and I'm reporting a problem on this page."
   },
   {
    "at": "evidence",
-   "text": "So the page says the agent proposes the action, and the UI renders the checkpoint."
+   "text": "So this is the problem, the agent proposes the action, but uh, there's no agent on the page at all."
   },
   {
-   "at": "notepad",
-   "text": "But the page shows no agent at all. A plain ADK agent never gets the frontend tool, so there is no approval card. Same missing AGUI toolset step here."
+   "at": "ide",
+   "text": "This is my project, I've implemented the exact code from the doc."
   },
   {
    "at": "+",
-   "text": "So this needs a fix, kindly check it."
+   "text": "The page has no backend, so I connected it to my quickstart agent myself."
+  },
+  {
+   "at": "demo",
+   "text": "Moving on to the demo. I asked it to run the governed action, it should show an approval card, but the agent says it has no tools."
+  },
+  {
+   "at": "notepad",
+   "text": "So a plain ADK agent never gets the frontend tool, the AGUI toolset step is missing here too."
+  },
+  {
+   "at": "+",
+   "text": "So yeah, kindly check this and fix it."
   }
  ]
 }

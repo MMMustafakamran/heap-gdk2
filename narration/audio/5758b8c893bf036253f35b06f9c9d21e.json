@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. I asked it to run the governed action, it should show an approval card, but the agent says it has no tools.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.406,
+ "file": "5758b8c893bf036253f35b06f9c9d21e.mp3",
+ "clip": "ADK-vue-20-GovernedActions",
+ "at": "demo"
+}

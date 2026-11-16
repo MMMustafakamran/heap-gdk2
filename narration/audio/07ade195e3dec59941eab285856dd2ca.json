@@ -1,0 +1,9 @@
+{
+ "text": "So a plain ADK agent needs the AGUI toolset to get the tool, umm, and the page never says that. With it added, it works.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 10.17,
+ "file": "07ade195e3dec59941eab285856dd2ca.mp3",
+ "clip": "ADK-vue-08-FrontendTools",
+ "at": "notepad"
+}

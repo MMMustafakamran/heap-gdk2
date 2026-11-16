@@ -1,0 +1,9 @@
+{
+ "text": "Moving on to the demo. It should show the time picker as written, but it only shows up with a stand-in shared chat and my own picker.",
+ "model": "s2.1-pro-free",
+ "refSha256": "2c9d0ecf4608feacc07c88e869cd4dec601481306a939b7be92fc1bff521a727",
+ "duration": 8.591,
+ "file": "1ac4fcedd284ca1168fb20caae9ec20d.mp3",
+ "clip": "ADK-vue-17-HumanInTheLoop",
+ "at": "demo"
+}
