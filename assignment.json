@@ -4,8 +4,8 @@
   "repo": "GoogleADK-Vue",
   "docBase": "https://docs.copilotkit.ai/vue/google-adk/",
   "versions": {
-    "@copilotkit/vue": "1.85.0",
-    "@copilotkit/runtime": "1.85.0",
+    "@copilotkit/vue": "1.88.0",
+    "@copilotkit/runtime": "1.88.0",
     "vue": "3.5.45",
     "vite": "8.3.6",
     "tsx": "4.23.15",
@@ -824,11 +824,11 @@
       "docPath": "agent-config",
       "reachable": "in-content",
       "linkedFrom": "inspector",
-      "status": "pending",
+      "status": "N/A",
       "excluded": true,
       "findings": [],
       "notes": [
-        "Note: in-content link from the Inspector page; not tested yet."
+        "Note: new page (2026-11-13), not tested yet."
       ],
       "block": null,
       "links": [],
@@ -848,11 +848,11 @@
       "docPath": "generative-ui/components",
       "reachable": "in-content",
       "linkedFrom": "inspector",
-      "status": "pending",
+      "status": "N/A",
       "excluded": true,
       "findings": [],
       "notes": [
-        "Note: in-content link from the Inspector page; not tested yet."
+        "Note: new page (2026-11-13), not tested yet."
       ],
       "block": null,
       "links": [],
@@ -872,11 +872,11 @@
       "docPath": "vs-code-extension",
       "reachable": "in-content",
       "linkedFrom": "inspector",
-      "status": "pending",
+      "status": "N/A",
       "excluded": true,
       "findings": [],
       "notes": [
-        "Note: in-content link from the Inspector page; not tested yet."
+        "Note: new page (2026-11-13), not tested yet."
       ],
       "block": null,
       "links": [],
@@ -896,11 +896,11 @@
       "docPath": "troubleshooting/error-debugging",
       "reachable": "in-content",
       "linkedFrom": "inspector",
-      "status": "pending",
+      "status": "N/A",
       "excluded": true,
       "findings": [],
       "notes": [
-        "Note: in-content link from the Inspector page; not tested yet."
+        "Note: new page (2026-11-13), not tested yet."
       ],
       "block": null,
       "links": [],

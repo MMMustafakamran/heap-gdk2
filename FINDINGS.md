@@ -1,7 +1,7 @@
 # FINDINGS — GoogleADK-Vue
 
 Open doc defects found implementing https://docs.copilotkit.ai/vue/google-adk (Vue frontend + Google ADK Python backend).
-Stack: @copilotkit/vue 1.85.0, @copilotkit/runtime 1.85.0 (declared ^1.85.0), vue 3.5.45, vite 8.3.6, tsx 4.23.15; ag-ui-adk 0.12.0, google-adk 2.14.0, google-genai 2.34.0, fastapi 0.162.4; Python 3.13.15, Node 26.7.0, npm 12.0.2; Microsoft Windows 11 Pro. Docs: https://docs.copilotkit.ai/vue/google-adk (snapshot 2026-11-12).
+Stack: @copilotkit/vue 1.88.0, @copilotkit/runtime 1.88.0 (npm latest, CI 2026-11-16) (declared ^1.85.0), vue 3.5.45, vite 8.3.6, tsx 4.23.15; ag-ui-adk 0.12.0, google-adk 2.14.0, google-genai 2.34.0, fastapi 0.162.4; Python 3.13.15, Node 26.7.0, npm 12.0.2; Microsoft Windows 11 Pro. Docs: https://docs.copilotkit.ai/vue/google-adk (snapshot 2026-11-12).
 
 ## Dev blockers
 
